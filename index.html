@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bitácora">
+<meta name="theme-color" content="#0e1117">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>Bitácora de Terreno v3.9</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap');
+
+:root {
+  --bg:       #0e1117;
+  --surface:  #161b24;
+  --surface2: #1d2535;
+  --border:   #2a3347;
+  --text:     #d4dce8;
+  --text-head:#ffffff;
+  --text-dim: #7a8ba0;
+  --text-faint:#4a5a70;
+  --accent:   #f0a500;
+  --accent-lo:rgba(240,165,0,0.12);
+  --danger:   #e03b3b;
+  --danger-lo:rgba(224,59,59,0.12);
+  --ok:       #3bbf7a;
+  --ok-lo:    rgba(59,191,122,0.10);
+  --info:     #3b8bbf;
+  --mono:     'Share Tech Mono', monospace;
+  --sans:     'Barlow', sans-serif;
+  --cond:     'Barlow Condensed', sans-serif;
+  --r:        8px;
+  --touch:    52px;
+  /* tipo colors — 6 tipos, único y semántico cada uno */
+  --t-obs:    #7a8ba0;   /* gris azulado — registro neutro */
+  --t-anomalia:#e03b3b;  /* rojo — falla activa ahora */
+  --t-desv:   #f07020;   /* naranja — parámetro fuera de rango */
+  --t-accion: #3b9bbf;   /* azul cyan — intervención deliberada */
+  --t-cond:   #d4a017;   /* amarillo-ocre — deterioro progresivo */
+  --t-idea:   #3bbf7a;   /* verde — mejora / hipótesis */
+}
+
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html{background:var(--bg);height:100%;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.5;min-height:100vh;overscroll-behavior:none;padding-bottom:env(safe-area-inset-bottom);}
+
+/* ── HEADER ── */
+#hdr{
+  background:var(--surface);border-bottom:2px solid var(--accent);
+  padding:10px 14px;display:flex;align-items:center;
+  justify-content:space-between;position:sticky;top:0;z-index:100;
+}
+.hdr-left{display:flex;align-items:center;gap:10px;}
+.hdr-logo{width:30px;height:30px;flex-shrink:0;}
+.hdr-info{display:flex;flex-direction:column;}
+.hdr-title{font-family:var(--cond);font-size:14px;font-weight:700;color:var(--text-head);text-transform:uppercase;letter-spacing:.06em;line-height:1;}
+.hdr-sub{font-family:var(--mono);font-size:9px;color:var(--text-dim);letter-spacing:.06em;margin-top:2px;}
+.hdr-count{font-family:var(--mono);font-size:10px;color:var(--accent);background:var(--accent-lo);border:1px solid rgba(240,165,0,.3);border-radius:20px;padding:2px 10px;white-space:nowrap;}
+
+/* ── JORNADA BANNER ── */
+#jornada-banner{
+  background:var(--surface2);border-bottom:1px solid var(--border);
+  padding:8px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;
+}
+#jornada-banner.editing{background:var(--surface);}
+.jornada-fields{display:flex;gap:8px;flex:1;flex-wrap:wrap;}
+.jornada-field{font-family:var(--mono);font-size:11px;color:var(--text-dim);}
+.jornada-field strong{color:var(--text);font-weight:600;}
+.jornada-edit-btn{font-family:var(--cond);font-size:10px;color:var(--text-faint);letter-spacing:.06em;text-transform:uppercase;flex-shrink:0;}
+
+/* ── JORNADA PANEL ── */
+#jornada-panel{display:none;background:var(--surface);border-bottom:2px solid var(--border);padding:12px 14px;}
+#jornada-panel.open{display:block;}
+.j-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
+.j-field{display:flex;flex-direction:column;gap:4px;}
+.j-label{font-family:var(--cond);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);}
+.j-input{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--sans);font-size:14px;padding:8px 10px;outline:none;width:100%;transition:border-color .15s;}
+.j-input:focus{border-color:var(--accent);}
+.j-save{background:var(--accent);color:#000;font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:none;border-radius:var(--r);padding:9px 18px;cursor:pointer;width:100%;margin-top:4px;}
+
+/* ── CAPTURE ZONE ── */
+#capture{
+  background:var(--surface);border-bottom:2px solid var(--border);
+  padding:12px 14px;position:sticky;top:52px;z-index:90;
+}
+
+/* Tipo buttons */
+.tipo-row{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px;}
+.tipo-row::-webkit-scrollbar{display:none;}
+.tipo-btn{
+  font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.06em;
+  border:2px solid transparent;border-radius:5px;padding:6px 12px;cursor:pointer;
+  white-space:nowrap;flex-shrink:0;transition:all .12s;background:var(--surface2);
+  color:var(--text-dim);min-height:36px;
+}
+.tipo-btn[data-tipo="OBSERVACIÓN"].active{border-color:var(--t-obs);     color:var(--t-obs);     background:rgba(122,139,160,.12);}
+.tipo-btn[data-tipo="ANOMALÍA"].active   {border-color:var(--t-anomalia); color:var(--t-anomalia);background:rgba(224,59,59,.12);}
+.tipo-btn[data-tipo="DESVIACIÓN"].active {border-color:var(--t-desv);     color:var(--t-desv);    background:rgba(240,112,32,.12);}
+.tipo-btn[data-tipo="ACCIÓN"].active     {border-color:var(--t-accion);   color:var(--t-accion);  background:rgba(59,155,191,.12);}
+.tipo-btn[data-tipo="CONDICIÓN"].active  {border-color:var(--t-cond);     color:var(--t-cond);    background:rgba(212,160,23,.12);}
+.tipo-btn[data-tipo="IDEA"].active       {border-color:var(--t-idea);     color:var(--t-idea);    background:rgba(59,191,122,.10);}
+
+/* Textarea */
+#nota-texto{
+  width:100%;background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:var(--r);color:var(--text);font-family:var(--sans);font-size:16px;
+  padding:12px;outline:none;resize:none;line-height:1.5;
+  transition:border-color .15s;min-height:80px;max-height:180px;
+  -webkit-text-size-adjust:100%;
+}
+#nota-texto:focus{border-color:var(--accent);}
+#nota-texto::placeholder{color:var(--text-faint);font-size:15px;}
+
+/* ── TAGS ── */
+#tags-row{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;align-items:center;}
+
+/* Estado group label */
+.tag-group-label{
+  font-family:var(--cond);font-size:9px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--text-faint);padding:0 2px;
+  white-space:nowrap;align-self:center;
+}
+
+/* Divider between groups */
+.tag-divider{width:1px;height:18px;background:var(--border);margin:0 2px;flex-shrink:0;}
+
+/* Base chip */
+.tag-chip{
+  font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--text-dim);
+  background:var(--surface2);border:1px solid var(--border);border-radius:20px;
+  padding:3px 10px;cursor:pointer;transition:all .12s;white-space:nowrap;
+  user-select:none;-webkit-user-select:none;
+}
+/* Estado chips */
+.tag-chip[data-group="estado"].sel{
+  background:var(--accent-lo);border-color:var(--accent);color:var(--accent);
+}
+.tag-chip[data-tag="urgente"].sel      {background:rgba(224,59,59,.14);  border-color:#e03b3b;color:#e03b3b;}
+.tag-chip[data-tag="pendiente"].sel    {background:rgba(240,165,0,.14);  border-color:#f0a500;color:#f0a500;}
+.tag-chip[data-tag="confirmado"].sel   {background:rgba(59,191,122,.12); border-color:#3bbf7a;color:#3bbf7a;}
+.tag-chip[data-tag="riesgo"].sel       {background:rgba(224,112,64,.14); border-color:#e07040;color:#e07040;}
+.tag-chip[data-tag="hipótesis"].sel    {background:rgba(168,85,247,.12); border-color:#a855f7;color:#a855f7;}
+.tag-chip[data-tag="procedimiento"].sel{background:rgba(59,139,191,.12); border-color:#3b8bbf;color:#3b8bbf;}
+.tag-chip[data-tag="insumo"].sel       {background:rgba(59,191,170,.12); border-color:#3bbfaa;color:#3bbfaa;}
+.tag-chip[data-tag="fotografiar"].sel  {background:rgba(59,191,191,.12); border-color:#3bbfbf;color:#3bbfbf;}
+
+
+/* ── IMPACTO SELECTOR ── */
+.impacto-row{display:flex;gap:5px;margin-top:8px;align-items:center;}
+.impacto-label{font-family:var(--cond);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);white-space:nowrap;padding-right:4px;}
+.impacto-btn{
+  font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--text-dim);
+  background:var(--surface2);border:1px solid var(--border);border-radius:20px;
+  padding:3px 10px;cursor:pointer;transition:all .12s;white-space:nowrap;
+  user-select:none;-webkit-user-select:none;flex:1;text-align:center;
+}
+.impacto-btn[data-impacto="PRODUCCIÓN"].sel   {background:rgba(240,96,48,.14); border-color:#f06030;color:#f06030;}
+.impacto-btn[data-impacto="CALIDAD"].sel      {background:rgba(168,85,247,.12);border-color:#a855f7;color:#a855f7;}
+.impacto-btn[data-impacto="SEGURIDAD"].sel    {background:rgba(224,80,160,.12);border-color:#e050a0;color:#e050a0;}
+.impacto-btn[data-impacto="MANTENIMIENTO"].sel{background:rgba(59,139,191,.14);border-color:#3b8bbf;color:#3b8bbf;}
+/* impacto en note card */
+.note-impacto{font-family:var(--mono);font-size:9px;letter-spacing:.06em;border-radius:20px;padding:2px 8px;margin-left:auto;flex-shrink:0;}
+.note-impacto[data-imp="PRODUCCIÓN"]   {background:rgba(240,96,48,.14); color:#f06030;border:1px solid rgba(240,96,48,.3);}
+.note-impacto[data-imp="CALIDAD"]      {background:rgba(168,85,247,.12);color:#a855f7;border:1px solid rgba(168,85,247,.3);}
+.note-impacto[data-imp="SEGURIDAD"]    {background:rgba(224,80,160,.12);color:#e050a0;border:1px solid rgba(224,80,160,.3);}
+.note-impacto[data-imp="MANTENIMIENTO"]{background:rgba(59,139,191,.14);color:#3b8bbf;border:1px solid rgba(59,139,191,.3);}
+/* impacto en edit */
+  font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--text-dim);
+  background:var(--surface2);border:1px solid var(--border);border-radius:20px;
+  padding:3px 10px;cursor:pointer;transition:all .12s;white-space:nowrap;
+  user-select:none;-webkit-user-select:none;
+}
+  font-family:var(--mono);font-size:11px;background:transparent;border:none;
+  outline:none;color:var(--text);width:80px;min-width:50px;
+}
+#tag-custom::placeholder{color:var(--text-faint);}
+/* Custom tag chips */
+.tag-chip[data-group="custom"].sel     {background:rgba(240,165,0,.12);border-color:var(--accent);color:var(--accent);}
+
+/* Photo preview in capture */
+#foto-preview-capture{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.foto-mini{width:64px;height:48px;object-fit:cover;border-radius:5px;border:1px solid var(--border);cursor:pointer;flex-shrink:0;}
+.foto-mini-wrap{position:relative;display:inline-block;}
+.foto-del{position:absolute;top:-5px;right:-5px;background:var(--danger);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;}
+
+/* Actions row */
+.capture-actions{display:flex;gap:8px;margin-top:10px;align-items:stretch;}
+.photo-btn{
+  background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);
+  color:var(--text-dim);font-size:22px;width:var(--touch);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:border-color .15s;min-height:var(--touch);
+}
+.photo-btn:active{border-color:var(--accent);color:var(--accent);}
+#guardar-btn{
+  background:var(--accent);color:#000;font-family:var(--cond);font-size:15px;
+  font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:none;
+  border-radius:var(--r);flex:1;cursor:pointer;min-height:var(--touch);
+  transition:background .15s;display:flex;align-items:center;justify-content:center;gap:6px;
+}
+#guardar-btn:active{background:#d49200;}
+
+/* ── FEED ── */
+#feed{padding:10px 14px 16px;}
+.feed-empty{text-align:center;padding:40px 20px;font-family:var(--mono);font-size:12px;color:var(--text-faint);letter-spacing:.06em;}
+.feed-date-sep{font-family:var(--mono);font-size:9px;color:var(--text-faint);letter-spacing:.1em;text-transform:uppercase;text-align:center;margin:14px 0 8px;position:relative;}
+.feed-date-sep::before,.feed-date-sep::after{content:'';position:absolute;top:50%;width:38%;height:1px;background:var(--border);}
+.feed-date-sep::before{left:0;}.feed-date-sep::after{right:0;}
+
+/* NOTE CARD */
+.note-card{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  margin-bottom:8px;overflow:hidden;transition:border-color .15s;
+  border-left:3px solid var(--border);
+}
+.note-card[data-tipo="OBSERVACIÓN"]{border-left-color:var(--t-obs);}
+.note-card[data-tipo="ANOMALÍA"]   {border-left-color:var(--t-anomalia);}
+.note-card[data-tipo="DESVIACIÓN"] {border-left-color:var(--t-desv);}
+.note-card[data-tipo="ACCIÓN"]     {border-left-color:var(--t-accion);}
+.note-card[data-tipo="CONDICIÓN"]  {border-left-color:var(--t-cond);}
+.note-card[data-tipo="IDEA"]       {border-left-color:var(--t-idea);}
+
+.note-head{display:flex;align-items:center;gap:8px;padding:8px 10px 6px;}
+.note-tipo{
+  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;
+  border-radius:3px;padding:2px 7px;flex-shrink:0;
+}
+.tipo-pill-OBSERVACIÓN{background:rgba(122,139,160,.15);color:var(--t-obs);}
+.tipo-pill-ANOMALÍA   {background:rgba(224,59,59,.12);  color:var(--t-anomalia);}
+.tipo-pill-DESVIACIÓN {background:rgba(240,112,32,.12); color:var(--t-desv);}
+.tipo-pill-ACCIÓN     {background:rgba(59,155,191,.12); color:var(--t-accion);}
+.tipo-pill-CONDICIÓN  {background:rgba(212,160,23,.12); color:var(--t-cond);}
+.tipo-pill-IDEA       {background:rgba(59,191,122,.10); color:var(--t-idea);}
+
+.note-hora{font-family:var(--mono);font-size:10px;color:var(--text-faint);flex:1;}
+.note-actions{display:flex;gap:4px;}
+.note-action-btn{background:none;border:1px solid var(--border);border-radius:4px;color:var(--text-dim);font-size:12px;padding:4px 8px;cursor:pointer;font-family:var(--mono);transition:all .12s;}
+.note-action-btn:active{border-color:var(--accent);color:var(--accent);}
+.note-action-btn.del:active{border-color:var(--danger);color:var(--danger);}
+
+.note-body{padding:0 10px 8px;}
+.note-texto{font-size:14px;color:var(--text-head);line-height:1.5;word-break:break-word;white-space:pre-wrap;}
+.note-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.note-tag{font-family:var(--mono);font-size:9px;color:var(--text-faint);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 8px;}
+/* tag coloring in card — estado */
+.note-tag[data-tag="urgente"]      {color:#e03b3b;border-color:rgba(224,59,59,.4);}
+.note-tag[data-tag="pendiente"]    {color:#f0a500;border-color:rgba(240,165,0,.4);}
+.note-tag[data-tag="confirmado"]   {color:#3bbf7a;border-color:rgba(59,191,122,.4);}
+.note-tag[data-tag="riesgo"]       {color:#e07040;border-color:rgba(224,112,64,.4);}
+/* tag coloring in card — análisis */
+.note-tag[data-tag="insumo"]       {color:#3bbfaa;border-color:rgba(59,191,170,.4);}
+.note-tag[data-tag="hipótesis"]    {color:#a855f7;border-color:rgba(168,85,247,.4);}
+.note-tag[data-tag="fotografiar"]  {color:#3bbfbf;border-color:rgba(59,191,191,.4);}
+.note-tag[data-tag="procedimiento"]{color:#3b8bbf;border-color:rgba(59,139,191,.4);}
+
+.note-fotos{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.note-foto{width:80px;height:60px;object-fit:cover;border-radius:5px;border:1px solid var(--border);cursor:pointer;transition:border-color .12s;}
+.note-foto:active{border-color:var(--accent);}
+
+/* ── EDIT PANEL — full rich edit ── */
+.note-card.editing{border-color:var(--accent)!important;border-left-color:var(--accent)!important;}
+.note-edit-panel{display:none;padding:0 10px 10px;border-top:1px solid var(--border);}
+.note-card.editing .note-edit-panel{display:block;}
+.note-card.editing .note-body{display:none;}
+
+.edit-textarea{
+  width:100%;background:var(--surface2);border:1px solid var(--accent);border-radius:var(--r);
+  color:var(--text);font-family:var(--sans);font-size:15px;padding:10px;
+  outline:none;resize:none;min-height:70px;line-height:1.5;margin-bottom:8px;
+}
+
+/* Edit photos section */
+.edit-photos-section{margin-bottom:8px;}
+.edit-photos-label{font-family:var(--cond);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-dim);margin-bottom:6px;display:block;}
+.edit-fotos-grid{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;}
+.edit-foto-wrap{position:relative;display:inline-block;}
+.edit-foto-thumb{width:72px;height:54px;object-fit:cover;border-radius:5px;border:1px solid var(--border);cursor:pointer;display:block;}
+.edit-foto-del{position:absolute;top:-5px;right:-5px;background:var(--danger);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1;}
+
+.edit-add-photo-btn{
+  background:var(--surface2);border:1.5px dashed var(--border);border-radius:var(--r);
+  color:var(--text-dim);font-family:var(--cond);font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;padding:7px 14px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:all .12s;
+}
+.edit-add-photo-btn:active{border-color:var(--accent);color:var(--accent);}
+
+/* Edit tags */
+  font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--text-dim);
+  background:var(--surface2);border:1px solid var(--border);border-radius:20px;
+  padding:3px 10px;cursor:pointer;transition:all .12s;white-space:nowrap;
+  user-select:none;-webkit-user-select:none;
+}
+
+/* Edit save/cancel */
+.edit-actions{display:flex;gap:8px;}
+.edit-save{background:var(--accent);color:#000;font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:none;border-radius:var(--r);padding:9px 16px;cursor:pointer;flex:1;min-height:40px;}
+.edit-cancel{background:var(--surface2);color:var(--text-dim);font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--border);border-radius:var(--r);padding:9px 16px;cursor:pointer;}
+
+/* ── EXPORT PANEL ── */
+#export-panel{
+  background:var(--surface);border-top:2px solid var(--border);
+  padding:12px 14px;display:flex;flex-direction:column;gap:8px;
+}
+.export-row{display:flex;gap:8px;}
+.exp-btn{
+  font-family:var(--cond);font-size:13px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;border:none;border-radius:var(--r);padding:12px 16px;
+  cursor:pointer;flex:1;min-height:var(--touch);display:flex;align-items:center;justify-content:center;gap:5px;
+  transition:all .15s;
+}
+.exp-btn:active{opacity:.8;}
+.exp-html{background:var(--ok);color:#000;}
+.exp-json{background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);}
+.exp-clear{background:var(--surface2);color:var(--danger);border:1px solid var(--danger-lo);}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--surface2);border:1px solid var(--accent);color:var(--accent);
+  font-family:var(--cond);font-size:11px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;padding:9px 20px;border-radius:30px;
+  opacity:0;transition:all .2s;z-index:999;pointer-events:none;white-space:nowrap;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── LIGHTBOX ── */
+#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;align-items:center;justify-content:center;}
+#lightbox.open{display:flex;}
+#lightbox img{max-width:96vw;max-height:90vh;border-radius:var(--r);object-fit:contain;}
+#lightbox-close{position:absolute;top:16px;right:16px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+
+/* ── OVERLAY AVISO GUARDAR ESTADO ── */
+  display:none;position:fixed;inset:0;background:rgba(14,17,23,.92);
+  z-index:600;align-items:center;justify-content:center;padding:24px;
+}
+  background:var(--surface);border:2px solid var(--accent);border-radius:12px;
+  padding:28px 24px;max-width:340px;width:100%;text-align:center;
+}
+::-webkit-scrollbar-track{background:var(--surface);}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+@media print{
+  #hdr,#capture,#export-panel,#toast,#lightbox{display:none!important;}
+  body{background:#fff;color:#111;}
+  .note-card{background:#fff;border:1px solid #ddd;page-break-inside:avoid;}
+  .note-texto{color:#111;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header id="hdr">
+  <div class="hdr-left">
+    <svg class="hdr-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <rect width="200" height="200" rx="14" fill="#1a1f2b" stroke="#f0a500" stroke-width="5"/>
+      <g transform="translate(100,88)">
+        <circle r="19" fill="none" stroke="#f0a500" stroke-width="5.5"/>
+        <circle r="10" fill="none" stroke="#f0a500" stroke-width="3.5"/>
+        <rect x="-2.8" y="-27" width="5.6" height="10" rx="2" fill="#f0a500" transform="rotate(0)"/>
+        <rect x="-2.8" y="-27" width="5.6" height="10" rx="2" fill="#f0a500" transform="rotate(45)"/>
+        <rect x="-2.8" y="-27" width="5.6" height="10" rx="2" fill="#f0a500" transform="rotate(90)"/>
+        <rect x="-2.8" y="-27" width="5.6" height="10" rx="2" fill="#f0a500" transform="rotate(135)"/>
+        <rect x="-2.8" y="-27" width="5.6" height="10" rx="2" fill="#f0a500" transform="rotate(180)"/>
+        <rect x="-2.8" y="-27" width="5.6" height="10" rx="2" fill="#f0a500" transform="rotate(225)"/>
+        <rect x="-2.8" y="-27" width="5.6" height="10" rx="2" fill="#f0a500" transform="rotate(270)"/>
+        <rect x="-2.8" y="-27" width="5.6" height="10" rx="2" fill="#f0a500" transform="rotate(315)"/>
+      </g>
+      <text x="100" y="148" text-anchor="middle" font-family="'Barlow Condensed','Arial Narrow',sans-serif" font-size="26" font-weight="700" fill="#f0a500" letter-spacing="6">ZALINEL</text>
+      <text x="100" y="165" text-anchor="middle" font-family="'Barlow Condensed','Arial Narrow',sans-serif" font-size="13" fill="#7a8ba0" letter-spacing="4">S P A</text>
+    </svg>
+    <div class="hdr-info">
+      <div class="hdr-title">Bitácora · Terreno</div>
+      <div class="hdr-sub" id="hdr-fecha-display">—</div>
+    </div>
+  </div>
+  <div class="hdr-count" id="hdr-count">0 notas</div>
+</header>
+
+<!-- ── JORNADA BANNER ── -->
+<div id="jornada-banner" onclick="toggleJornada()">
+  <div class="jornada-fields">
+    <span class="jornada-field"><strong id="j-nombre-display">Sin nombre</strong></span>
+    <span class="jornada-field" id="j-equipo-display" style="color:var(--text-faint);">—</span>
+  </div>
+  <span class="jornada-edit-btn">✎ editar</span>
+</div>
+
+<!-- ── JORNADA EDIT PANEL ── -->
+<div id="jornada-panel">
+  <div class="j-row">
+    <div class="j-field">
+      <label class="j-label">Nombre de jornada</label>
+      <input class="j-input" id="j-nombre" placeholder="ej. Turno mañana" maxlength="40">
+    </div>
+    <div class="j-field">
+      <label class="j-label">Equipo / zona</label>
+      <input class="j-input" id="j-equipo" placeholder="ej. ZH780L — Célula 3">
+    </div>
+  </div>
+  <div class="j-row">
+    <div class="j-field">
+      <label class="j-label">Operador</label>
+      <input class="j-input" id="j-operador" placeholder="Nombre">
+    </div>
+    <div class="j-field">
+      <label class="j-label">Turno</label>
+      <input class="j-input" id="j-turno" placeholder="ej. Mañana / Tarde">
+    </div>
+  </div>
+  <button class="j-save" onclick="saveJornada()">Guardar jornada</button>
+</div>
+
+<!-- ── CAPTURE ZONE ── -->
+<section id="capture">
+  <!-- Tipos -->
+  <div class="tipo-row" id="tipo-row">
+    <button class="tipo-btn active" data-tipo="OBSERVACIÓN" onclick="selTipo('OBSERVACIÓN')">OBSERVACIÓN</button>
+    <button class="tipo-btn"        data-tipo="ANOMALÍA"    onclick="selTipo('ANOMALÍA')">ANOMALÍA</button>
+    <button class="tipo-btn"        data-tipo="DESVIACIÓN"  onclick="selTipo('DESVIACIÓN')">DESVIACIÓN</button>
+    <button class="tipo-btn"        data-tipo="ACCIÓN"      onclick="selTipo('ACCIÓN')">ACCIÓN</button>
+    <button class="tipo-btn"        data-tipo="CONDICIÓN"   onclick="selTipo('CONDICIÓN')">CONDICIÓN</button>
+    <button class="tipo-btn"        data-tipo="IDEA"        onclick="selTipo('IDEA')">IDEA</button>
+  </div>
+
+  <!-- Textarea -->
+  <textarea id="nota-texto" placeholder="Escribe la nota…" rows="3"
+    oninput="autoResize(this)"
+    onkeydown="if(event.ctrlKey&&event.key==='Enter'){guardarNota();}"></textarea>
+
+  <!-- Tags — two groups with a visual divider -->
+  <div id="tags-row">
+    <!-- Estado -->
+    <span class="tag-chip" data-group="estado" data-tag="urgente"       onclick="togTag(this)">urgente</span>
+    <span class="tag-chip" data-group="estado" data-tag="pendiente"     onclick="togTag(this)">pendiente</span>
+    <span class="tag-chip" data-group="estado" data-tag="confirmado"    onclick="togTag(this)">confirmado</span>
+    <span class="tag-chip" data-group="estado" data-tag="riesgo"        onclick="togTag(this)">riesgo</span>
+    <span class="tag-divider"></span>
+    <!-- Análisis -->
+    <span class="tag-chip" data-group="analisis" data-tag="hipótesis"     onclick="togTag(this)">hipótesis</span>
+    <span class="tag-chip" data-group="analisis" data-tag="procedimiento" onclick="togTag(this)">procedimiento</span>
+    <span class="tag-chip" data-group="analisis" data-tag="insumo"        onclick="togTag(this)">insumo</span>
+    <span class="tag-chip" data-group="analisis" data-tag="fotografiar"   onclick="togTag(this)">fotografiar</span>
+    <span class="tag-divider"></span>
+    <input id="tag-custom" placeholder="+ etiqueta" maxlength="20"
+      onkeydown="if(event.key==='Enter'||event.key===','){addCustomTag(this.value.trim());this.value='';event.preventDefault();}">
+  </div>
+
+  <!-- Impacto -->
+  <div class="impacto-row">
+    <span class="impacto-label">Impacto:</span>
+    <button class="impacto-btn" data-impacto="PRODUCCIÓN"    onclick="selImpacto(this)">Producción</button>
+    <button class="impacto-btn" data-impacto="CALIDAD"       onclick="selImpacto(this)">Calidad</button>
+    <button class="impacto-btn" data-impacto="SEGURIDAD"     onclick="selImpacto(this)">Seguridad</button>
+    <button class="impacto-btn" data-impacto="MANTENIMIENTO" onclick="selImpacto(this)">Mantención</button>
+  </div>
+
+  <!-- Foto preview -->
+  <div id="foto-preview-capture"></div>
+
+  <!-- Actions -->
+  <div class="capture-actions">
+    <div class="photo-btn" onclick="document.getElementById('foto-input').click()" title="Agregar foto">📷</div>
+    <input type="file" id="foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotoCapture(event)">
+    <button id="guardar-btn" onclick="guardarNota()">
+      <span style="font-size:18px;">✚</span> Guardar nota
+    </button>
+  </div>
+</section>
+
+<!-- ── FEED ── -->
+<div id="feed">
+  <div class="feed-empty" id="feed-empty">Sin notas aún.<br>Escribe arriba y pulsa Guardar.</div>
+</div>
+
+<!-- ── EXPORT PANEL ── -->
+<div id="export-panel">
+  <div class="export-row">
+    <button class="exp-btn exp-html" onclick="exportHTML()">⬇ Exportar HTML</button>
+    <button class="exp-btn exp-json" onclick="exportJSON()">⬇ JSON</button>
+    <button class="exp-btn exp-clear" onclick="clearAll()">🗑 Borrar todo</button>
+  </div>
+</div>
+
+<!-- ── LIGHTBOX ── -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button id="lightbox-close" onclick="closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<!-- Hidden file input for edit photo addition -->
+<input type="file" id="edit-foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleEditFoto(event)">
+
+<div id="toast"></div>
+
+<script>
+// ── PROTECCIÓN CONTRA SALIDA ACCIDENTAL ──
+window.addEventListener('beforeunload', (e) => {
+  saveNotas();
+  if (notas.length > 0) {
+    e.preventDefault();
+    e.returnValue = '';
+  }
+});
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+const STORAGE_KEY = 'zalinel_bitacora_v39';
+const JORNADA_KEY = 'zalinel_jornada_v1';
+let notas         = [];
+let capturaFotos  = [];
+let tipoActivo    = 'OBSERVACIÓN';
+let impactoActivo = null;
+let jornada       = { nombre:'', equipo:'', operador:'', turno:'' };
+let editingId     = null;
+
+const STATIC_TAGS_ESTADO   = ['urgente','pendiente','confirmado','riesgo'];
+const STATIC_TAGS_ANALISIS = ['hipótesis','procedimiento','insumo','fotografiar'];
+const ALL_STATIC_TAGS      = [...STATIC_TAGS_ESTADO, ...STATIC_TAGS_ANALISIS];
+const IMPACTOS = ['PRODUCCIÓN','CALIDAD','SEGURIDAD','MANTENIMIENTO'];
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  loadJornada();
+  loadNotas();
+  renderFeed();
+  updateHdrFecha();
+  document.getElementById('j-nombre').value   = jornada.nombre;
+  document.getElementById('j-equipo').value   = jornada.equipo;
+  document.getElementById('j-operador').value = jornada.operador;
+  document.getElementById('j-turno').value    = jornada.turno;
+  updateJornadaDisplay();
+  if (!jornada.nombre) toggleJornada();
+  setTimeout(() => document.getElementById('nota-texto').focus(), 300);
+});
+
+// ════════════════════════════════════════
+// JORNADA
+// ════════════════════════════════════════
+function toggleJornada() {
+  const panel  = document.getElementById('jornada-panel');
+  const banner = document.getElementById('jornada-banner');
+  const open   = panel.classList.toggle('open');
+  banner.classList.toggle('editing', open);
+}
+function saveJornada() {
+  jornada.nombre   = document.getElementById('j-nombre').value.trim()   || 'Jornada';
+  jornada.equipo   = document.getElementById('j-equipo').value.trim();
+  jornada.operador = document.getElementById('j-operador').value.trim();
+  jornada.turno    = document.getElementById('j-turno').value.trim();
+  localStorage.setItem(JORNADA_KEY, JSON.stringify(jornada));
+  updateJornadaDisplay();
+  toggleJornada();
+  toast('Jornada guardada');
+}
+function updateJornadaDisplay() {
+  document.getElementById('j-nombre-display').textContent = jornada.nombre || 'Sin nombre';
+  const equipoEl = document.getElementById('j-equipo-display');
+  equipoEl.textContent = [jornada.equipo, jornada.operador, jornada.turno].filter(Boolean).join(' · ') || '—';
+}
+function updateHdrFecha() {
+  const d = new Date();
+  const dias  = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  document.getElementById('hdr-fecha-display').textContent =
+    `${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]} · ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+setInterval(updateHdrFecha, 60000);
+
+// ════════════════════════════════════════
+// TIPO SELECTOR
+// ════════════════════════════════════════
+function selTipo(tipo) {
+  tipoActivo = tipo;
+  document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.tipo-btn[data-tipo="${tipo}"]`).classList.add('active');
+  document.getElementById('nota-texto').focus();
+}
+
+function selImpacto(btn) {
+  const val = btn.dataset.impacto;
+  if (impactoActivo === val) {
+    impactoActivo = null;
+    btn.classList.remove('sel');
+  } else {
+    impactoActivo = val;
+    document.querySelectorAll('.impacto-btn').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+  }
+}
+
+function resetImpacto() {
+  impactoActivo = null;
+  document.querySelectorAll('.impacto-btn').forEach(b => b.classList.remove('sel'));
+}
+
+// ════════════════════════════════════════
+// TAGS — CAPTURE
+// ════════════════════════════════════════
+function togTag(chip) { chip.classList.toggle('sel'); }
+
+function addCustomTag(tag) {
+  if (!tag) return;
+  const row = document.getElementById('tags-row');
+  const existing = row.querySelector(`[data-tag="${CSS.escape(tag)}"]`);
+  if (!existing) {
+    const chip = document.createElement('span');
+    chip.className = 'tag-chip sel';
+    chip.dataset.tag = tag;
+    chip.dataset.group = 'custom';
+    chip.textContent = tag;
+    chip.onclick = () => chip.classList.toggle('sel');
+    row.insertBefore(chip, row.querySelector('#tag-custom'));
+  } else {
+    existing.classList.add('sel');
+  }
+}
+
+function getSelectedTags() {
+  const custom = document.getElementById('tag-custom').value.trim();
+  if (custom) addCustomTag(custom);
+  document.getElementById('tag-custom').value = '';
+  return Array.from(document.querySelectorAll('#tags-row .tag-chip.sel')).map(c => c.dataset.tag);
+}
+
+function resetTagRow() {
+  document.querySelectorAll('#tags-row .tag-chip').forEach(c => {
+    if (c.dataset.group === 'custom') c.remove();
+    else c.classList.remove('sel');
+  });
+  document.getElementById('tag-custom').value = '';
+}
+
+// ════════════════════════════════════════
+// PHOTOS — CAPTURE
+// ════════════════════════════════════════
+function handleFotoCapture(e) {
+  Array.from(e.target.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      compressImage(ev.target.result, 1200, 0.82, compressed => {
+        capturaFotos.push(compressed);
+        renderFotoCapture();
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+
+function compressImage(dataUrl, maxW, quality, cb) {
+  const img = new Image();
+  img.onload = () => {
+    let w = img.width, h = img.height;
+    if (w > maxW) { h = h * maxW / w; w = maxW; }
+    const canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    cb(canvas.toDataURL('image/jpeg', quality));
+  };
+  img.src = dataUrl;
+}
+
+function renderFotoCapture() {
+  const wrap = document.getElementById('foto-preview-capture');
+  wrap.innerHTML = capturaFotos.map((src, i) => `
+    <div class="foto-mini-wrap">
+      <img class="foto-mini" src="${src}" onclick="openLightbox('${escAttr(src)}')">
+      <button class="foto-del" onclick="removeCapturaFoto(${i})">✕</button>
+    </div>`).join('');
+}
+
+function removeCapturaFoto(i) {
+  capturaFotos.splice(i, 1);
+  renderFotoCapture();
+}
+
+// ════════════════════════════════════════
+// GUARDAR NOTA
+// ════════════════════════════════════════
+function guardarNota() {
+  const texto = document.getElementById('nota-texto').value.trim();
+  if (!texto && capturaFotos.length === 0) {
+    flash('Escribe algo o agrega una foto');
+    document.getElementById('nota-texto').focus();
+    return;
+  }
+  const now  = new Date();
+  const nota = {
+    id:      now.getTime(),
+    fecha:   isoDate(now),
+    hora:    `${pad(now.getHours())}:${pad(now.getMinutes())}`,
+    tipo:    tipoActivo,
+    impacto: impactoActivo,
+    texto:   texto,
+    tags:    getSelectedTags(),
+    fotos:   [...capturaFotos],
+  };
+  notas.unshift(nota);
+  saveNotas();
+  renderFeed();
+
+  // Reset — keep tipo active for speed
+  document.getElementById('nota-texto').value = '';
+  document.getElementById('nota-texto').style.height = 'auto';
+  capturaFotos = [];
+  document.getElementById('foto-preview-capture').innerHTML = '';
+  resetTagRow();
+  resetImpacto();
+
+  toast(`${nota.tipo} · ${nota.hora}`);
+  document.getElementById('nota-texto').focus();
+  document.getElementById('feed').scrollIntoView({ behavior: 'smooth' });
+}
+
+// ════════════════════════════════════════
+// RENDER FEED
+// ════════════════════════════════════════
+function renderFeed() {
+  const feed  = document.getElementById('feed');
+  const empty = document.getElementById('feed-empty');
+  document.getElementById('hdr-count').textContent = `${notas.length} nota${notas.length !== 1 ? 's' : ''}`;
+
+  if (notas.length === 0) {
+    feed.innerHTML = '';
+    feed.appendChild(empty);
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  const groups = {};
+  notas.forEach(n => {
+    if (!groups[n.fecha]) groups[n.fecha] = [];
+    groups[n.fecha].push(n);
+  });
+
+  let html = '';
+  Object.entries(groups).forEach(([fecha, items]) => {
+    const [y,m,d] = fecha.split('-');
+    const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    html += `<div class="feed-date-sep">${parseInt(d)} ${meses[parseInt(m)-1]} ${y}</div>`;
+    items.forEach(n => { html += renderNota(n); });
+  });
+
+  feed.innerHTML = html;
+  empty.style.display = 'none';
+  feed.appendChild(empty);
+}
+
+function renderNota(n) {
+  // Sanitize tipo for CSS class (ANOMALÍA has accent)
+  const tipoClass = `tipo-pill-${n.tipo}`;
+
+  const fotosHtml = n.fotos && n.fotos.length
+    ? `<div class="note-fotos">${n.fotos.map(f =>
+        `<img class="note-foto" src="${escAttr(f)}" onclick="openLightbox('${escAttr(f)}')">`
+      ).join('')}</div>`
+    : '';
+
+  const tagsHtml = n.tags && n.tags.length
+    ? `<div class="note-tags">${n.tags.map(t =>
+        `<span class="note-tag" data-tag="${esc(t)}">${esc(t)}</span>`
+      ).join('')}</div>`
+    : '';
+
+  // Build edit panel for this note
+  const editPanel = buildEditPanel(n);
+
+  const impactoHtml = n.impacto
+    ? `<span class="note-impacto" data-imp="${esc(n.impacto)}">${esc(n.impacto)}</span>`
+    : '';
+
+  return `
+  <div class="note-card" data-tipo="${esc(n.tipo)}" id="note-${n.id}">
+    <div class="note-head">
+      <span class="note-tipo ${tipoClass}">${esc(n.tipo)}</span>
+      <span class="note-hora">${esc(n.hora)}</span>
+      ${impactoHtml}
+      <div class="note-actions">
+        <button class="note-action-btn" onclick="editarNota(${n.id})" title="Editar">✎</button>
+        <button class="note-action-btn del" onclick="borrarNota(${n.id})" title="Borrar">✕</button>
+      </div>
+    </div>
+    <div class="note-body" id="body-${n.id}">
+      <div class="note-texto">${esc(n.texto)}</div>
+      ${tagsHtml}
+      ${fotosHtml}
+    </div>
+    ${editPanel}
+  </div>`;
+}
+
+function buildEditPanel(n) {
+  const fotosExisting = (n.fotos || []).map((f, i) => `
+    <div class="edit-foto-wrap" id="ef-${n.id}-${i}">
+      <img class="edit-foto-thumb" src="${escAttr(f)}" onclick="openLightbox('${escAttr(f)}')">
+      <button class="edit-foto-del" onclick="removeEditFoto(${n.id},${i})" title="Eliminar foto">✕</button>
+    </div>`).join('');
+
+  return `
+    <div class="note-edit-panel" id="edit-panel-${n.id}">
+      <textarea class="edit-textarea" id="edit-text-${n.id}" oninput="autoResize(this)">${esc(n.texto)}</textarea>
+
+      <div class="edit-photos-section">
+        <span class="edit-photos-label">📷 Fotos</span>
+        <div class="edit-fotos-grid" id="edit-fotos-${n.id}">${fotosExisting}</div>
+        <button class="edit-add-photo-btn" onclick="openEditFotoInput(${n.id})">📷 + Agregar foto</button>
+      </div>
+
+      <div class="edit-actions">
+        <button class="edit-save" onclick="saveEdit(${n.id})">Guardar</button>
+        <button class="edit-cancel" onclick="cancelEdit(${n.id})">Cancelar</button>
+      </div>
+    </div>`;
+}
+
+// ════════════════════════════════════════
+// EDIT — OPEN / CLOSE
+// ════════════════════════════════════════
+function editarNota(id) {
+  // If another note is being edited, close it first
+  if (editingId && editingId !== id) cancelEdit(editingId);
+
+  const card = document.getElementById(`note-${id}`);
+  if (!card) return;
+
+  if (card.classList.contains('editing')) {
+    cancelEdit(id);
+    return;
+  }
+
+  card.classList.add('editing');
+  editingId = id;
+
+  // Resize textarea to fit content
+  const ta = document.getElementById(`edit-text-${id}`);
+  if (ta) { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight + 4, 300) + 'px'; ta.focus(); }
+
+  // Scroll card into view
+  setTimeout(() => card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 80);
+}
+
+function cancelEdit(id) {
+  const card = document.getElementById(`note-${id}`);
+  if (card) card.classList.remove('editing');
+  if (editingId === id) editingId = null;
+}
+
+// ════════════════════════════════════════
+// EDIT — TAGS
+// ════════════════════════════════════════
+
+// ════════════════════════════════════════
+// EDIT — PHOTOS
+// ════════════════════════════════════════
+let editFotoTargetId = null;
+
+function openEditFotoInput(noteId) {
+  editFotoTargetId = noteId;
+  document.getElementById('edit-foto-input').click();
+}
+
+function handleEditFoto(e) {
+  if (!editFotoTargetId) return;
+  const id = editFotoTargetId;
+  Array.from(e.target.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      compressImage(ev.target.result, 1200, 0.82, compressed => {
+        const n = notas.find(x => x.id === id);
+        if (!n) return;
+        n.fotos = n.fotos || [];
+        n.fotos.push(compressed);
+        saveNotas();
+        // Re-render just the fotos grid and the note body (not full feed)
+        refreshEditFotosGrid(id, n.fotos);
+        refreshNoteBody(id, n);
+        toast('Foto agregada');
+      });
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+  editFotoTargetId = null;
+}
+
+function removeEditFoto(noteId, fotoIdx) {
+  const n = notas.find(x => x.id === noteId);
+  if (!n) return;
+  n.fotos.splice(fotoIdx, 1);
+  saveNotas();
+  // Re-build the fotos grid in the edit panel
+  refreshEditFotosGrid(noteId, n.fotos);
+  // Also refresh the read-only body
+  refreshNoteBody(noteId, n);
+  toast('Foto eliminada');
+}
+
+function refreshEditFotosGrid(noteId, fotos) {
+  const grid = document.getElementById(`edit-fotos-${noteId}`);
+  if (!grid) return;
+  grid.innerHTML = fotos.map((f, i) => `
+    <div class="edit-foto-wrap" id="ef-${noteId}-${i}">
+      <img class="edit-foto-thumb" src="${escAttr(f)}" onclick="openLightbox('${escAttr(f)}')">
+      <button class="edit-foto-del" onclick="removeEditFoto(${noteId},${i})" title="Eliminar foto">✕</button>
+    </div>`).join('');
+}
+
+function refreshNoteBody(noteId, n) {
+  const body = document.getElementById(`body-${noteId}`);
+  if (!body) return;
+  const fotosHtml = n.fotos && n.fotos.length
+    ? `<div class="note-fotos">${n.fotos.map(f =>
+        `<img class="note-foto" src="${escAttr(f)}" onclick="openLightbox('${escAttr(f)}')">`
+      ).join('')}</div>` : '';
+  const tagsHtml = n.tags && n.tags.length
+    ? `<div class="note-tags">${n.tags.map(t =>
+        `<span class="note-tag" data-tag="${esc(t)}">${esc(t)}</span>`
+      ).join('')}</div>` : '';
+  body.innerHTML = `
+    <div class="note-texto">${esc(n.texto)}</div>
+    ${tagsHtml}
+    ${fotosHtml}`;
+}
+
+// ════════════════════════════════════════
+// EDIT — SAVE
+// ════════════════════════════════════════
+function saveEdit(id) {
+  const n = notas.find(x => x.id === id);
+  if (!n) return;
+
+  const ta = document.getElementById(`edit-text-${id}`);
+  n.texto = ta ? ta.value.trim() : n.texto;
+  // fotos already updated in-place by removeEditFoto / handleEditFoto
+
+  saveNotas();
+  cancelEdit(id);
+  renderFeed();
+  toast('Nota actualizada');
+}
+
+// ════════════════════════════════════════
+// DELETE
+// ════════════════════════════════════════
+function borrarNota(id) {
+  if (!confirm('¿Borrar esta nota?')) return;
+  notas = notas.filter(n => n.id !== id);
+  if (editingId === id) editingId = null;
+  saveNotas();
+  renderFeed();
+  toast('Nota eliminada');
+}
+
+// ════════════════════════════════════════
+// STORAGE
+// ════════════════════════════════════════
+function saveNotas() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(notas));
+  } catch(e) {
+    toast('⚠ Almacenamiento lleno — exporta y limpia');
+  }
+}
+function loadNotas() {
+  // Try v2 key first, then fall back to v1 to preserve existing data
+  let raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) raw = localStorage.getItem('zalinel_bitacora_v38');
+  if (!raw) raw = localStorage.getItem('zalinel_bitacora_v37');
+  if (!raw) raw = localStorage.getItem('zalinel_bitacora_v30');
+  if (!raw) raw = localStorage.getItem('zalinel_bitacora_v1');
+  if (raw) { try { notas = JSON.parse(raw); } catch(e) { notas = []; } }
+}
+function loadJornada() {
+  const raw = localStorage.getItem(JORNADA_KEY);
+  if (raw) { try { jornada = { ...jornada, ...JSON.parse(raw) }; } catch(e) {} }
+}
+
+// ════════════════════════════════════════
+// EXPORT HTML
+// ════════════════════════════════════════
+function exportHTML() {
+  if (notas.length === 0) { toast('Sin notas que exportar'); return; }
+  const now = new Date();
+  const filename = buildFilename();
+  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+
+  const tipoColors = {
+    'OBSERVACIÓN': '#7a8ba0',
+    'ANOMALÍA':    '#e03b3b',
+    'DESVIACIÓN':  '#f07020',
+    'ACCIÓN':      '#3b9bbf',
+    'CONDICIÓN':   '#d4a017',
+    'IDEA':        '#3bbf7a'
+  };
+
+  const notasHTML = notas.map(n => {
+    const color = tipoColors[n.tipo] || '#aaa';
+    const fotosH = (n.fotos || []).map(f =>
+      `<img src="${f}" style="width:120px;height:90px;object-fit:cover;border-radius:4px;border:1px solid #ddd;margin:3px;">`).join('');
+    const tagsH = n.tags && n.tags.length
+      ? `<div style="margin-top:5px;">${n.tags.map(t =>
+          `<span style="font-size:9px;background:#f0f0f0;border-radius:20px;padding:2px 8px;margin:2px;font-family:monospace;">${t}</span>`
+        ).join('')}</div>` : '';
+    return `
+    <div style="background:#fff;border:1px solid #ddd;border-left:4px solid ${color};border-radius:6px;margin-bottom:10px;overflow:hidden;">
+      <div style="padding:7px 12px;display:flex;align-items:center;gap:8px;background:#fafafa;border-bottom:1px solid #eee;">
+        <span style="font-family:monospace;font-size:10px;font-weight:700;background:${color}20;color:${color};border-radius:3px;padding:2px 7px;">${n.tipo}</span>
+        <span style="font-family:monospace;font-size:10px;color:#aaa;">${n.hora}</span>
+        ${n.impacto ? `<span style="font-family:monospace;font-size:9px;background:#f0f0f0;border-radius:20px;padding:2px 8px;margin-left:auto;">${n.impacto}</span>` : ''}
+      </div>
+      <div style="padding:8px 12px;">
+        <div style="font-size:14px;color:#222;white-space:pre-wrap;word-break:break-word;line-height:1.5;">${esc(n.texto)}</div>
+        ${tagsH}
+        ${fotosH ? `<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">${fotosH}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Bitácora — ${esc(jornada.nombre || 'Terreno')}</title>
+<style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f6f8;padding:16px;color:#111;}
+.wrap{max-width:860px;margin:0 auto;}
+.hdr{background:#1a1f2b;color:#f0a500;padding:14px 18px;border-radius:8px;margin-bottom:16px;}
+.hdr h1{font-size:18px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+.hdr-meta{font-family:monospace;font-size:10px;color:#7a8ba0;margin-top:4px;letter-spacing:.06em;}</style>
+</head><body><div class="wrap">
+<div class="hdr">
+  <h1>Bitácora de Terreno — ${esc(jornada.nombre || 'Sin nombre')}</h1>
+  <div class="hdr-meta">
+    ${jornada.equipo   ? `Equipo: ${esc(jornada.equipo)} · ` : ''}
+    ${jornada.operador ? `Operador: ${esc(jornada.operador)} · ` : ''}
+    ${jornada.turno    ? `Turno: ${esc(jornada.turno)} · ` : ''}
+    ${notas.length} notas · Exportado: ${now.toLocaleString('es-CL')}
+  </div>
+</div>
+${notasHTML}
+<div style="font-size:9px;color:#bbb;font-family:monospace;text-align:right;margin-top:12px;">ZALINEL SpA · Bitácora de Terreno v3.9 · ${filename}</div>
+</div></body></html>`;
+
+  download(filename, html, 'text/html;charset=utf-8');
+  toast(`HTML · ${notas.length} notas`);
+}
+
+function exportJSON() {
+  if (notas.length === 0) { toast('Sin notas que exportar'); return; }
+  const data = { jornada, version: 3.9, exportado: new Date().toISOString(), notas };
+  const filename = buildFilename().replace('.html', '.json');
+  download(filename, JSON.stringify(data, null, 2), 'application/json;charset=utf-8');
+  toast(`JSON · ${filename}`);
+}
+
+// ════════════════════════════════════════
+// CLEAR
+// ════════════════════════════════════════
+function clearAll() {
+  if (!confirm(`¿Borrar las ${notas.length} notas? No se puede deshacer.`)) return;
+  notas = [];
+  saveNotas();
+  renderFeed();
+  toast('Jornada reiniciada');
+}
+
+// ════════════════════════════════════════
+// LIGHTBOX
+// ════════════════════════════════════════
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.getElementById('lightbox-img').src = '';
+}
+
+// ════════════════════════════════════════
+// UTILITIES
+// ════════════════════════════════════════
+function pad(n) { return String(n).padStart(2,'0'); }
+function isoDate(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(s) {
+  // For use in onclick="..." attributes — escape single quotes too
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 300) + 'px';
+}
+function buildFilename() {
+  const d = new Date();
+  const dd   = pad(d.getDate());
+  const mm   = pad(d.getMonth()+1);
+  const yy   = String(d.getFullYear()).slice(-2);
+  const hhmm = pad(d.getHours()) + pad(d.getMinutes());
+  const slug = s => (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-zA-Z0-9]/g,'').substring(0,8).toUpperCase() || 'BIT';
+  return `BIT_${slug(jornada.nombre)}_${dd}${mm}${yy}_${hhmm}.html`;
+}
+function download(filename, content, type) {
+  const blob = new Blob([content], { type });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+function flash(msg) {
+  const ta = document.getElementById('nota-texto');
+  ta.style.borderColor = 'var(--danger)';
+  toast(msg);
+  setTimeout(() => ta.style.borderColor = '', 1200);
+}
+
+// ════════════════════════════════════════
+// PWA — SERVICE WORKER
+// ════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .then(reg => {
+        // Detectar actualización disponible
+        reg.addEventListener('updatefound', () => {
+          const newSW = reg.installing;
+          newSW.addEventListener('statechange', () => {
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+              // Hay versión nueva — mostrar banner
+              mostrarBannerActualizacion(newSW);
+            }
+          });
+        });
+      });
+
+    // Recargar cuando el SW nuevo toma control
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) { refreshing = true; window.location.reload(); }
+    });
+  });
+}
+
+function mostrarBannerActualizacion(sw) {
+  const banner = document.createElement('div');
+  banner.style.cssText = `
+    position:fixed;top:0;left:0;right:0;z-index:9999;
+    background:#1d2535;border-bottom:2px solid #f0a500;
+    padding:10px 14px;display:flex;align-items:center;
+    justify-content:space-between;gap:10px;
+    font-family:'Barlow Condensed',sans-serif;font-size:13px;
+    font-weight:700;letter-spacing:.04em;color:#d4dce8;
+  `;
+  banner.innerHTML = `
+    <span>🔄 Nueva versión disponible</span>
+    <button onclick="this.closest('div').remove();${sw}.postMessage('skipWaiting')"
+      style="background:#f0a500;color:#000;border:none;border-radius:5px;
+             padding:6px 14px;font-family:'Barlow Condensed',sans-serif;
+             font-size:12px;font-weight:700;letter-spacing:.04em;cursor:pointer;">
+      Actualizar ahora
+    </button>
+  `;
+  document.body.prepend(banner);
+}
+</script>
+</body>
+</html>

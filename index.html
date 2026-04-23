@@ -1,11 +1,11 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<title>BitÃ¡cora de Terreno v4.0</title>
+<title>Bitácora de Terreno v4.0</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap');
 
@@ -30,20 +30,20 @@
   --cond:     'Barlow Condensed', sans-serif;
   --r:        8px;
   --touch:    52px;
-  /* tipo colors â€” 6 tipos, Ãºnico y semÃ¡ntico cada uno */
-  --t-obs:    #7a8ba0;   /* gris azulado â€” registro neutro */
-  --t-anomalia:#e03b3b;  /* rojo â€” falla activa ahora */
-  --t-desv:   #f07020;   /* naranja â€” parÃ¡metro fuera de rango */
-  --t-accion: #3b9bbf;   /* azul cyan â€” intervenciÃ³n deliberada */
-  --t-cond:   #d4a017;   /* amarillo-ocre â€” deterioro progresivo */
-  --t-idea:   #3bbf7a;   /* verde â€” mejora / hipÃ³tesis */
+  /* tipo colors — 6 tipos, único y semántico cada uno */
+  --t-obs:    #7a8ba0;   /* gris azulado — registro neutro */
+  --t-anomalia:#e03b3b;  /* rojo — falla activa ahora */
+  --t-desv:   #f07020;   /* naranja — parámetro fuera de rango */
+  --t-accion: #3b9bbf;   /* azul cyan — intervención deliberada */
+  --t-cond:   #d4a017;   /* amarillo-ocre — deterioro progresivo */
+  --t-idea:   #3bbf7a;   /* verde — mejora / hipótesis */
 }
 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html{background:var(--bg);height:100%;}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.5;min-height:100vh;overscroll-behavior:none;padding-bottom:env(safe-area-inset-bottom);}
 
-/* â”€â”€ HEADER â”€â”€ */
+/* ── HEADER ── */
 #hdr{
   background:var(--surface);border-bottom:2px solid var(--accent);
   padding:10px 14px;display:flex;align-items:center;
@@ -56,7 +56,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 .hdr-sub{font-family:var(--mono);font-size:9px;color:var(--text-dim);letter-spacing:.06em;margin-top:2px;}
 .hdr-count{font-family:var(--mono);font-size:10px;color:var(--accent);background:var(--accent-lo);border:1px solid rgba(240,165,0,.3);border-radius:20px;padding:2px 10px;white-space:nowrap;}
 
-/* â”€â”€ JORNADA BANNER â”€â”€ */
+/* ── JORNADA BANNER ── */
 #jornada-banner{
   background:var(--surface2);border-bottom:1px solid var(--border);
   padding:8px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;
@@ -67,7 +67,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 .jornada-field strong{color:var(--text);font-weight:600;}
 .jornada-edit-btn{font-family:var(--cond);font-size:10px;color:var(--text-faint);letter-spacing:.06em;text-transform:uppercase;flex-shrink:0;}
 
-/* â”€â”€ JORNADA PANEL â”€â”€ */
+/* ── JORNADA PANEL ── */
 #jornada-panel{display:none;background:var(--surface);border-bottom:2px solid var(--border);padding:12px 14px;}
 #jornada-panel.open{display:block;}
 .j-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;}
@@ -77,7 +77,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 .j-input:focus{border-color:var(--accent);}
 .j-save{background:var(--accent);color:#000;font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:none;border-radius:var(--r);padding:9px 18px;cursor:pointer;width:100%;margin-top:4px;}
 
-/* â”€â”€ CAPTURE ZONE â”€â”€ */
+/* ── CAPTURE ZONE ── */
 #capture{
   background:var(--surface);border-bottom:2px solid var(--border);
   padding:12px 14px;position:sticky;top:52px;z-index:90;
@@ -92,11 +92,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
   white-space:nowrap;flex-shrink:0;transition:all .12s;background:var(--surface2);
   color:var(--text-dim);min-height:36px;
 }
-.tipo-btn[data-tipo="OBSERVACIÃ“N"].active{border-color:var(--t-obs);     color:var(--t-obs);     background:rgba(122,139,160,.12);}
-.tipo-btn[data-tipo="ANOMALÃA"].active   {border-color:var(--t-anomalia); color:var(--t-anomalia);background:rgba(224,59,59,.12);}
-.tipo-btn[data-tipo="DESVIACIÃ“N"].active {border-color:var(--t-desv);     color:var(--t-desv);    background:rgba(240,112,32,.12);}
-.tipo-btn[data-tipo="ACCIÃ“N"].active     {border-color:var(--t-accion);   color:var(--t-accion);  background:rgba(59,155,191,.12);}
-.tipo-btn[data-tipo="CONDICIÃ“N"].active  {border-color:var(--t-cond);     color:var(--t-cond);    background:rgba(212,160,23,.12);}
+.tipo-btn[data-tipo="OBSERVACIÓN"].active{border-color:var(--t-obs);     color:var(--t-obs);     background:rgba(122,139,160,.12);}
+.tipo-btn[data-tipo="ANOMALÍA"].active   {border-color:var(--t-anomalia); color:var(--t-anomalia);background:rgba(224,59,59,.12);}
+.tipo-btn[data-tipo="DESVIACIÓN"].active {border-color:var(--t-desv);     color:var(--t-desv);    background:rgba(240,112,32,.12);}
+.tipo-btn[data-tipo="ACCIÓN"].active     {border-color:var(--t-accion);   color:var(--t-accion);  background:rgba(59,155,191,.12);}
+.tipo-btn[data-tipo="CONDICIÓN"].active  {border-color:var(--t-cond);     color:var(--t-cond);    background:rgba(212,160,23,.12);}
 .tipo-btn[data-tipo="IDEA"].active       {border-color:var(--t-idea);     color:var(--t-idea);    background:rgba(59,191,122,.10);}
 .tipo-btn[data-tipo="SEGURIDAD"]{border-color:rgba(224,59,59,.45);color:#ff8a8a;background:rgba(224,59,59,.08);}
 .tipo-btn[data-tipo="SEGURIDAD"].active  {border-color:var(--danger);     color:#ff8a8a;           background:rgba(224,59,59,.16);box-shadow:0 0 0 1px rgba(224,59,59,.24) inset;}
@@ -114,7 +114,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 #capture.seguridad-mode #nota-texto,#capture.seguridad-mode #tags-row,#capture.seguridad-mode .impacto-row{display:none;}
 #capture.seguridad-mode #incidente-panel{display:grid;}
 
-/* â”€â”€ TAGS â”€â”€ */
+/* ── TAGS ── */
 #tags-row{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;align-items:center;}
 
 /* Estado group label */
@@ -142,13 +142,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 .tag-chip[data-tag="pendiente"].sel    {background:rgba(240,165,0,.14);  border-color:#f0a500;color:#f0a500;}
 .tag-chip[data-tag="confirmado"].sel   {background:rgba(59,191,122,.12); border-color:#3bbf7a;color:#3bbf7a;}
 .tag-chip[data-tag="riesgo"].sel       {background:rgba(224,112,64,.14); border-color:#e07040;color:#e07040;}
-.tag-chip[data-tag="hipÃ³tesis"].sel    {background:rgba(168,85,247,.12); border-color:#a855f7;color:#a855f7;}
+.tag-chip[data-tag="hipótesis"].sel    {background:rgba(168,85,247,.12); border-color:#a855f7;color:#a855f7;}
 .tag-chip[data-tag="procedimiento"].sel{background:rgba(59,139,191,.12); border-color:#3b8bbf;color:#3b8bbf;}
 .tag-chip[data-tag="insumo"].sel       {background:rgba(59,191,170,.12); border-color:#3bbfaa;color:#3bbfaa;}
 .tag-chip[data-tag="fotografiar"].sel  {background:rgba(59,191,191,.12); border-color:#3bbfbf;color:#3bbfbf;}
 
 
-/* â”€â”€ IMPACTO SELECTOR â”€â”€ */
+/* ── IMPACTO SELECTOR ── */
 .impacto-row{display:flex;gap:5px;margin-top:8px;align-items:center;}
 .impacto-label{font-family:var(--cond);font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);white-space:nowrap;padding-right:4px;}
 .impacto-btn{
@@ -157,12 +157,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
   padding:3px 10px;cursor:pointer;transition:all .12s;white-space:nowrap;
   user-select:none;-webkit-user-select:none;flex:1;text-align:center;
 }
-.impacto-btn[data-impacto="PRODUCCIÃ“N"].sel   {background:rgba(240,96,48,.14); border-color:#f06030;color:#f06030;}
+.impacto-btn[data-impacto="PRODUCCIÓN"].sel   {background:rgba(240,96,48,.14); border-color:#f06030;color:#f06030;}
 .impacto-btn[data-impacto="CALIDAD"].sel      {background:rgba(168,85,247,.12);border-color:#a855f7;color:#a855f7;}
 .impacto-btn[data-impacto="MANTENIMIENTO"].sel{background:rgba(59,139,191,.14);border-color:#3b8bbf;color:#3b8bbf;}
 /* impacto en note card */
 .note-impacto{font-family:var(--mono);font-size:9px;letter-spacing:.06em;border-radius:20px;padding:2px 8px;margin-left:auto;flex-shrink:0;}
-.note-impacto[data-imp="PRODUCCIÃ“N"]   {background:rgba(240,96,48,.14); color:#f06030;border:1px solid rgba(240,96,48,.3);}
+.note-impacto[data-imp="PRODUCCIÓN"]   {background:rgba(240,96,48,.14); color:#f06030;border:1px solid rgba(240,96,48,.3);}
 .note-impacto[data-imp="CALIDAD"]      {background:rgba(168,85,247,.12);color:#a855f7;border:1px solid rgba(168,85,247,.3);}
 .note-impacto[data-imp="MANTENIMIENTO"]{background:rgba(59,139,191,.14);color:#3b8bbf;border:1px solid rgba(59,139,191,.3);}
 /* impacto en edit */
@@ -181,13 +181,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 /* Photo preview in capture */
 #foto-preview-capture{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
 
-/* Modo incidente */
-.incidente-toggle{
-  margin-top:10px;background:rgba(224,80,80,.08);border:1px solid rgba(224,80,80,.28);
-  border-radius:var(--r);padding:9px 10px;display:flex;align-items:center;gap:8px;
-  font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#ff8a8a;
-}
-.incidente-toggle input{width:18px;height:18px;accent-color:var(--danger);}
+/* Modo seguridad estructurado */
 #incidente-panel{
   display:none;margin-top:8px;background:rgba(224,80,80,.06);border:1px solid rgba(224,80,80,.22);
   border-radius:var(--r);padding:10px;gap:8px;grid-template-columns:1fr 1fr;
@@ -232,7 +226,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 }
 #guardar-btn:active{background:#d49200;}
 
-/* â”€â”€ FEED â”€â”€ */
+/* ── FEED ── */
 #feed{padding:10px 14px 16px;}
 .feed-empty{text-align:center;padding:40px 20px;font-family:var(--mono);font-size:12px;color:var(--text-faint);letter-spacing:.06em;}
 .feed-date-sep{font-family:var(--mono);font-size:9px;color:var(--text-faint);letter-spacing:.1em;text-transform:uppercase;text-align:center;margin:14px 0 8px;position:relative;}
@@ -245,12 +239,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
   margin-bottom:8px;overflow:hidden;transition:border-color .15s;
   border-left:3px solid var(--border);
 }
-.note-card[data-tipo="OBSERVACIÃ“N"]{border-left-color:var(--t-obs);}
+.note-card[data-tipo="OBSERVACIÓN"]{border-left-color:var(--t-obs);}
 .note-card[data-tipo="SEGURIDAD"]{border-left-color:var(--danger);}
-.note-card[data-tipo="ANOMALÃA"]   {border-left-color:var(--t-anomalia);}
-.note-card[data-tipo="DESVIACIÃ“N"] {border-left-color:var(--t-desv);}
-.note-card[data-tipo="ACCIÃ“N"]     {border-left-color:var(--t-accion);}
-.note-card[data-tipo="CONDICIÃ“N"]  {border-left-color:var(--t-cond);}
+.note-card[data-tipo="ANOMALÍA"]   {border-left-color:var(--t-anomalia);}
+.note-card[data-tipo="DESVIACIÓN"] {border-left-color:var(--t-desv);}
+.note-card[data-tipo="ACCIÓN"]     {border-left-color:var(--t-accion);}
+.note-card[data-tipo="CONDICIÓN"]  {border-left-color:var(--t-cond);}
 .note-card[data-tipo="IDEA"]       {border-left-color:var(--t-idea);}
 
 .note-head{display:flex;align-items:center;gap:8px;padding:8px 10px 6px;}
@@ -258,12 +252,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
   font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;
   border-radius:3px;padding:2px 7px;flex-shrink:0;
 }
-.tipo-pill-OBSERVACIÃ“N{background:rgba(122,139,160,.15);color:var(--t-obs);}
+.tipo-pill-OBSERVACIÓN{background:rgba(122,139,160,.15);color:var(--t-obs);}
 .tipo-pill-SEGURIDAD{background:rgba(224,59,59,.16);color:#ff8a8a;}
-.tipo-pill-ANOMALÃA   {background:rgba(224,59,59,.12);  color:var(--t-anomalia);}
-.tipo-pill-DESVIACIÃ“N {background:rgba(240,112,32,.12); color:var(--t-desv);}
-.tipo-pill-ACCIÃ“N     {background:rgba(59,155,191,.12); color:var(--t-accion);}
-.tipo-pill-CONDICIÃ“N  {background:rgba(212,160,23,.12); color:var(--t-cond);}
+.tipo-pill-ANOMALÍA   {background:rgba(224,59,59,.12);  color:var(--t-anomalia);}
+.tipo-pill-DESVIACIÓN {background:rgba(240,112,32,.12); color:var(--t-desv);}
+.tipo-pill-ACCIÓN     {background:rgba(59,155,191,.12); color:var(--t-accion);}
+.tipo-pill-CONDICIÓN  {background:rgba(212,160,23,.12); color:var(--t-cond);}
 .tipo-pill-IDEA       {background:rgba(59,191,122,.10); color:var(--t-idea);}
 
 .note-hora{font-family:var(--mono);font-size:10px;color:var(--text-faint);flex:1;}
@@ -276,14 +270,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 .note-texto{font-size:14px;color:var(--text-head);line-height:1.5;word-break:break-word;white-space:pre-wrap;}
 .note-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
 .note-tag{font-family:var(--mono);font-size:9px;color:var(--text-faint);background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:2px 8px;}
-/* tag coloring in card â€” estado */
+/* tag coloring in card — estado */
 .note-tag[data-tag="urgente"]      {color:#e03b3b;border-color:rgba(224,59,59,.4);}
 .note-tag[data-tag="pendiente"]    {color:#f0a500;border-color:rgba(240,165,0,.4);}
 .note-tag[data-tag="confirmado"]   {color:#3bbf7a;border-color:rgba(59,191,122,.4);}
 .note-tag[data-tag="riesgo"]       {color:#e07040;border-color:rgba(224,112,64,.4);}
-/* tag coloring in card â€” anÃ¡lisis */
+/* tag coloring in card — análisis */
 .note-tag[data-tag="insumo"]       {color:#3bbfaa;border-color:rgba(59,191,170,.4);}
-.note-tag[data-tag="hipÃ³tesis"]    {color:#a855f7;border-color:rgba(168,85,247,.4);}
+.note-tag[data-tag="hipótesis"]    {color:#a855f7;border-color:rgba(168,85,247,.4);}
 .note-tag[data-tag="fotografiar"]  {color:#3bbfbf;border-color:rgba(59,191,191,.4);}
 .note-tag[data-tag="procedimiento"]{color:#3b8bbf;border-color:rgba(59,139,191,.4);}
 
@@ -291,7 +285,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 .note-foto{width:80px;height:60px;object-fit:cover;border-radius:5px;border:1px solid var(--border);cursor:pointer;transition:border-color .12s;}
 .note-foto:active{border-color:var(--accent);}
 
-/* â”€â”€ EDIT PANEL â€” full rich edit â”€â”€ */
+/* ── EDIT PANEL — full rich edit ── */
 .note-card.editing{border-color:var(--accent)!important;border-left-color:var(--accent)!important;}
 .note-edit-panel{display:none;padding:0 10px 10px;border-top:1px solid var(--border);}
 .note-card.editing .note-edit-panel{display:block;}
@@ -331,7 +325,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 .edit-save{background:var(--accent);color:#000;font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:none;border-radius:var(--r);padding:9px 16px;cursor:pointer;flex:1;min-height:40px;}
 .edit-cancel{background:var(--surface2);color:var(--text-dim);font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--border);border-radius:var(--r);padding:9px 16px;cursor:pointer;}
 
-/* â”€â”€ EXPORT PANEL â”€â”€ */
+/* ── EXPORT PANEL ── */
 #export-panel{
   background:var(--surface);border-top:2px solid var(--border);
   padding:12px 14px;display:flex;flex-direction:column;gap:8px;
@@ -348,7 +342,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 .exp-json{background:var(--surface2);color:var(--text-dim);border:1px solid var(--border);}
 .exp-clear{background:var(--surface2);color:var(--danger);border:1px solid var(--danger-lo);}
 
-/* â”€â”€ TOAST â”€â”€ */
+/* ── TOAST ── */
 #toast{
   position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(12px);
   background:var(--surface2);border:1px solid var(--accent);color:var(--accent);
@@ -358,13 +352,13 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 }
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-/* â”€â”€ LIGHTBOX â”€â”€ */
+/* ── LIGHTBOX ── */
 #lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:500;align-items:center;justify-content:center;}
 #lightbox.open{display:flex;}
 #lightbox img{max-width:96vw;max-height:90vh;border-radius:var(--r);object-fit:contain;}
 #lightbox-close{position:absolute;top:16px;right:16px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:50%;width:36px;height:36px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 
-/* â”€â”€ OVERLAY AVISO GUARDAR ESTADO â”€â”€ */
+/* ── OVERLAY AVISO GUARDAR ESTADO ── */
   display:none;position:fixed;inset:0;background:rgba(14,17,23,.92);
   z-index:600;align-items:center;justify-content:center;padding:24px;
 }
@@ -384,7 +378,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 </head>
 <body>
 
-<!-- â”€â”€ HEADER â”€â”€ -->
+<!-- ── HEADER ── -->
 <header id="hdr">
   <div class="hdr-left">
     <svg class="hdr-logo" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -405,32 +399,32 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
       <text x="100" y="165" text-anchor="middle" font-family="'Barlow Condensed','Arial Narrow',sans-serif" font-size="13" fill="#7a8ba0" letter-spacing="4">S P A</text>
     </svg>
     <div class="hdr-info">
-      <div class="hdr-title">BitÃ¡cora Â· Terreno</div>
-      <div class="hdr-sub" id="hdr-fecha-display">â€”</div>
+      <div class="hdr-title">Bitácora · Terreno</div>
+      <div class="hdr-sub" id="hdr-fecha-display">—</div>
     </div>
   </div>
   <div class="hdr-count" id="hdr-count">0 notas</div>
 </header>
 
-<!-- â”€â”€ JORNADA BANNER â”€â”€ -->
+<!-- ── JORNADA BANNER ── -->
 <div id="jornada-banner" onclick="toggleJornada()">
   <div class="jornada-fields">
     <span class="jornada-field"><strong id="j-nombre-display">Sin nombre</strong></span>
-    <span class="jornada-field" id="j-equipo-display" style="color:var(--text-faint);">â€”</span>
+    <span class="jornada-field" id="j-equipo-display" style="color:var(--text-faint);">—</span>
   </div>
-  <span class="jornada-edit-btn">âœŽ editar</span>
+  <span class="jornada-edit-btn">✎ editar</span>
 </div>
 
-<!-- â”€â”€ JORNADA EDIT PANEL â”€â”€ -->
+<!-- ── JORNADA EDIT PANEL ── -->
 <div id="jornada-panel">
   <div class="j-row">
     <div class="j-field">
       <label class="j-label">Nombre de jornada</label>
-      <input class="j-input" id="j-nombre" placeholder="ej. Turno maÃ±ana" maxlength="40">
+      <input class="j-input" id="j-nombre" placeholder="ej. Turno mañana" maxlength="40">
     </div>
     <div class="j-field">
       <label class="j-label">Equipo / zona</label>
-      <input class="j-input" id="j-equipo" placeholder="ej. ZH780L â€” CÃ©lula 3">
+      <input class="j-input" id="j-equipo" placeholder="ej. ZH780L — Célula 3">
     </div>
   </div>
   <div class="j-row">
@@ -440,31 +434,31 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
     </div>
     <div class="j-field">
       <label class="j-label">Turno</label>
-      <input class="j-input" id="j-turno" placeholder="ej. MaÃ±ana / Tarde">
+      <input class="j-input" id="j-turno" placeholder="ej. Mañana / Tarde">
     </div>
   </div>
   <button class="j-save" onclick="saveJornada()">Guardar jornada</button>
 </div>
 
-<!-- â”€â”€ CAPTURE ZONE â”€â”€ -->
+<!-- ── CAPTURE ZONE ── -->
 <section id="capture">
   <!-- Tipos -->
   <div class="tipo-row" id="tipo-row">
-    <button class="tipo-btn active" data-tipo="OBSERVACIÃ“N" onclick="selTipo('OBSERVACIÃ“N')">OBSERVACIÃ“N</button>
-    <button class="tipo-btn"        data-tipo="ANOMALÃA"    onclick="selTipo('ANOMALÃA')">ANOMALÃA</button>
-    <button class="tipo-btn"        data-tipo="DESVIACIÃ“N"  onclick="selTipo('DESVIACIÃ“N')">DESVIACIÃ“N</button>
-    <button class="tipo-btn"        data-tipo="ACCIÃ“N"      onclick="selTipo('ACCIÃ“N')">ACCIÃ“N</button>
-    <button class="tipo-btn"        data-tipo="CONDICIÃ“N"   onclick="selTipo('CONDICIÃ“N')">CONDICIÃ“N</button>
+    <button class="tipo-btn active" data-tipo="OBSERVACIÓN" onclick="selTipo('OBSERVACIÓN')">OBSERVACIÓN</button>
+    <button class="tipo-btn"        data-tipo="ANOMALÍA"    onclick="selTipo('ANOMALÍA')">ANOMALÍA</button>
+    <button class="tipo-btn"        data-tipo="DESVIACIÓN"  onclick="selTipo('DESVIACIÓN')">DESVIACIÓN</button>
+    <button class="tipo-btn"        data-tipo="ACCIÓN"      onclick="selTipo('ACCIÓN')">ACCIÓN</button>
+    <button class="tipo-btn"        data-tipo="CONDICIÓN"   onclick="selTipo('CONDICIÓN')">CONDICIÓN</button>
     <button class="tipo-btn"        data-tipo="IDEA"        onclick="selTipo('IDEA')">IDEA</button>
     <button class="tipo-btn"        data-tipo="SEGURIDAD"   onclick="selTipo('SEGURIDAD')">SEGURIDAD</button>
   </div>
 
   <!-- Textarea -->
-  <textarea id="nota-texto" placeholder="Escribe la notaâ€¦" rows="3"
+  <textarea id="nota-texto" placeholder="Escribe la nota…" rows="3"
     oninput="autoResize(this)"
     onkeydown="if(event.ctrlKey&&event.key==='Enter'){guardarNota();}"></textarea>
 
-  <!-- Tags â€” two groups with a visual divider -->
+  <!-- Tags — two groups with a visual divider -->
   <div id="tags-row">
     <!-- Estado -->
     <span class="tag-chip" data-group="estado" data-tag="urgente"       onclick="togTag(this)">urgente</span>
@@ -472,8 +466,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
     <span class="tag-chip" data-group="estado" data-tag="confirmado"    onclick="togTag(this)">confirmado</span>
     <span class="tag-chip" data-group="estado" data-tag="riesgo"        onclick="togTag(this)">riesgo</span>
     <span class="tag-divider"></span>
-    <!-- AnÃ¡lisis -->
-    <span class="tag-chip" data-group="analisis" data-tag="hipÃ³tesis"     onclick="togTag(this)">hipÃ³tesis</span>
+    <!-- Análisis -->
+    <span class="tag-chip" data-group="analisis" data-tag="hipótesis"     onclick="togTag(this)">hipótesis</span>
     <span class="tag-chip" data-group="analisis" data-tag="procedimiento" onclick="togTag(this)">procedimiento</span>
     <span class="tag-chip" data-group="analisis" data-tag="insumo"        onclick="togTag(this)">insumo</span>
     <span class="tag-chip" data-group="analisis" data-tag="fotografiar"   onclick="togTag(this)">fotografiar</span>
@@ -485,9 +479,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
   <!-- Impacto -->
   <div class="impacto-row">
     <span class="impacto-label">Impacto:</span>
-    <button class="impacto-btn" data-impacto="PRODUCCIÃ“N"    onclick="selImpacto(this)">ProducciÃ³n</button>
+    <button class="impacto-btn" data-impacto="PRODUCCIÓN"    onclick="selImpacto(this)">Producción</button>
     <button class="impacto-btn" data-impacto="CALIDAD"       onclick="selImpacto(this)">Calidad</button>
-    <button class="impacto-btn" data-impacto="MANTENIMIENTO" onclick="selImpacto(this)">MantenciÃ³n</button>
+    <button class="impacto-btn" data-impacto="MANTENIMIENTO" onclick="selImpacto(this)">Mantención</button>
   </div>
 
   <!-- Modo seguridad estructurado -->
@@ -497,7 +491,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
       <select id="inc-tipo">
         <option value="Accidente">Accidente</option>
         <option value="Casi accidente">Casi accidente</option>
-        <option value="CondiciÃ³n insegura">CondiciÃ³n insegura</option>
+        <option value="Condición insegura">Condición insegura</option>
       </select>
     </div>
     <div class="incidente-field">
@@ -509,14 +503,14 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
       </select>
     </div>
     <div class="incidente-field">
-      <label>UbicaciÃ³n</label>
+      <label>Ubicación</label>
       <input id="inc-ubicacion" placeholder="Ej. mezclador, campana, piso">
     </div>
     <div class="incidente-field">
-      <label>Â¿Se detuvo operaciÃ³n?</label>
+      <label>¿Se detuvo operación?</label>
       <select id="inc-detencion">
         <option value="No">No</option>
-        <option value="SÃ­">SÃ­</option>
+        <option value="Sí">Sí</option>
       </select>
     </div>
     <div class="incidente-field full">
@@ -524,12 +518,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
       <input id="inc-personas" placeholder="Opcional">
     </div>
     <div class="incidente-field full">
-      <label>DescripciÃ³n breve: Â¿quÃ© ocurriÃ³?</label>
-      <textarea id="inc-descripcion" placeholder="Describe el hecho crÃ­tico en forma directa"></textarea>
+      <label>Descripción breve: ¿qué ocurrió?</label>
+      <textarea id="inc-descripcion" placeholder="Describe el hecho crítico en forma directa"></textarea>
     </div>
     <div class="incidente-field full">
-      <label>AcciÃ³n inmediata tomada</label>
-      <textarea id="inc-accion" placeholder="QuÃ© se hizo en el momento"></textarea>
+      <label>Acción inmediata tomada</label>
+      <textarea id="inc-accion" placeholder="Qué se hizo en el momento"></textarea>
     </div>
   </div>
 
@@ -538,32 +532,32 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 
   <!-- Actions -->
   <div class="capture-actions">
-    <div class="photo-btn" onclick="document.getElementById('foto-input').click()" title="Agregar foto">ðŸ“·</div>
+    <div class="photo-btn" onclick="document.getElementById('foto-input').click()" title="Agregar foto">📷</div>
     <input type="file" id="foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotoCapture(event)">
     <button id="guardar-btn" onclick="guardarNota()">
-      <span style="font-size:18px;">âœš</span> Guardar nota
+      <span style="font-size:18px;">✚</span> Guardar nota
     </button>
   </div>
 </section>
 
-<!-- â”€â”€ FEED â”€â”€ -->
+<!-- ── FEED ── -->
 <div id="feed">
-  <div class="feed-empty" id="feed-empty">Sin notas aÃºn.<br>Escribe arriba y pulsa Guardar.</div>
+  <div class="feed-empty" id="feed-empty">Sin notas aún.<br>Escribe arriba y pulsa Guardar.</div>
 </div>
 
-<!-- â”€â”€ EXPORT PANEL â”€â”€ -->
+<!-- ── EXPORT PANEL ── -->
 <div id="export-panel">
   <div class="export-row">
-    <button class="exp-btn exp-html" onclick="exportHTML()">â¬‡ Exportar HTML</button>
-    <button class="exp-btn exp-json" onclick="exportJSON()">â¬‡ JSON</button>
-    <button class="exp-btn exp-clear" onclick="clearAll()">ðŸ—‘ Borrar todo</button>
+    <button class="exp-btn exp-html" onclick="exportHTML()">⬇ Exportar HTML</button>
+    <button class="exp-btn exp-json" onclick="exportJSON()">⬇ JSON</button>
+    <button class="exp-btn exp-clear" onclick="clearAll()">🗑 Borrar todo</button>
   </div>
 </div>
 
-<!-- â”€â”€ LIGHTBOX â”€â”€ -->
+<!-- ── LIGHTBOX ── -->
 <div id="lightbox" onclick="closeLightbox()">
-  <button id="lightbox-close" onclick="closeLightbox()">âœ•</button>
-  <img id="lightbox-img" src="" alt="">
+  <button id="lightbox-close" onclick="event.stopPropagation();closeLightbox()">✕</button>
+  <img id="lightbox-img" src="" alt="" onclick="event.stopPropagation()">
 </div>
 
 <!-- Hidden file input for edit photo addition -->
@@ -572,7 +566,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 <div id="toast"></div>
 
 <script>
-// â”€â”€ PROTECCIÃ“N CONTRA SALIDA ACCIDENTAL â”€â”€
+// ── PROTECCIÓN CONTRA SALIDA ACCIDENTAL ──
 window.addEventListener('beforeunload', (e) => {
   saveNotas();
   if (notas.length > 0) {
@@ -581,26 +575,26 @@ window.addEventListener('beforeunload', (e) => {
   }
 });
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 // STATE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 const STORAGE_KEY = 'zalinel_bitacora_v39';
 const JORNADA_KEY = 'zalinel_jornada_v1';
 let notas         = [];
 let capturaFotos  = [];
-let tipoActivo    = 'OBSERVACIÃ“N';
+let tipoActivo    = 'OBSERVACIÓN';
 let impactoActivo = null;
 let jornada       = { nombre:'', equipo:'', operador:'', turno:'' };
 let editingId     = null;
 
 const STATIC_TAGS_ESTADO   = ['urgente','pendiente','confirmado','riesgo'];
-const STATIC_TAGS_ANALISIS = ['hipÃ³tesis','procedimiento','insumo','fotografiar'];
+const STATIC_TAGS_ANALISIS = ['hipótesis','procedimiento','insumo','fotografiar'];
 const ALL_STATIC_TAGS      = [...STATIC_TAGS_ESTADO, ...STATIC_TAGS_ANALISIS];
-const IMPACTOS = ['PRODUCCIÃ“N','CALIDAD','MANTENIMIENTO'];
+const IMPACTOS = ['PRODUCCIÓN','CALIDAD','MANTENIMIENTO'];
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 // INIT
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   loadJornada();
   loadNotas();
@@ -615,9 +609,9 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => document.getElementById('nota-texto').focus(), 300);
 });
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 // JORNADA
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 function toggleJornada() {
   const panel  = document.getElementById('jornada-panel');
   const banner = document.getElementById('jornada-banner');
@@ -637,20 +631,20 @@ function saveJornada() {
 function updateJornadaDisplay() {
   document.getElementById('j-nombre-display').textContent = jornada.nombre || 'Sin nombre';
   const equipoEl = document.getElementById('j-equipo-display');
-  equipoEl.textContent = [jornada.equipo, jornada.operador, jornada.turno].filter(Boolean).join(' Â· ') || 'â€”';
+  equipoEl.textContent = [jornada.equipo, jornada.operador, jornada.turno].filter(Boolean).join(' · ') || '—';
 }
 function updateHdrFecha() {
   const d = new Date();
-  const dias  = ['Dom','Lun','Mar','MiÃ©','Jue','Vie','SÃ¡b'];
+  const dias  = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
   const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
   document.getElementById('hdr-fecha-display').textContent =
-    `${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]} Â· ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    `${dias[d.getDay()]} ${d.getDate()} ${meses[d.getMonth()]} · ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 setInterval(updateHdrFecha, 60000);
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 // TIPO SELECTOR
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 function selTipo(tipo) {
   tipoActivo = tipo;
   document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
@@ -688,9 +682,9 @@ function resetImpacto() {
   document.querySelectorAll('.impacto-btn').forEach(b => b.classList.remove('sel'));
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// TAGS â€” CAPTURE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
+// TAGS — CAPTURE
+// ════════════════════════════════════════
 function togTag(chip) { chip.classList.toggle('sel'); }
 
 function addCustomTag(tag) {
@@ -725,9 +719,9 @@ function resetTagRow() {
   document.getElementById('tag-custom').value = '';
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// PHOTOS â€” CAPTURE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
+// PHOTOS — CAPTURE
+// ════════════════════════════════════════
 function handleFotoCapture(e) {
   Array.from(e.target.files).forEach(file => {
     const reader = new FileReader();
@@ -759,8 +753,8 @@ function renderFotoCapture() {
   const wrap = document.getElementById('foto-preview-capture');
   wrap.innerHTML = capturaFotos.map((src, i) => `
     <div class="foto-mini-wrap">
-      <img class="foto-mini" src="${src}" onclick="openLightbox('${escAttr(src)}')">
-      <button class="foto-del" onclick="removeCapturaFoto(${i})">âœ•</button>
+      <img class="foto-mini" src="${src}" onclick="openLightboxFromImg(this)">
+      <button class="foto-del" onclick="removeCapturaFoto(${i})">✕</button>
     </div>`).join('');
 }
 
@@ -769,12 +763,7 @@ function removeCapturaFoto(i) {
   renderFotoCapture();
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-
-function toggleIncidentePanel(){
-  if(document.getElementById('incidente-check')?.checked) selTipo('SEGURIDAD');
-  updateSeguridadMode();
-}
+// ════════════════════════════════════════
 
 function collectIncidente(){
   if(tipoActivo !== 'SEGURIDAD') return null;
@@ -792,8 +781,6 @@ function collectIncidente(){
 }
 
 function resetIncidente(){
-  const check = document.getElementById('incidente-check');
-  if(check) check.checked = false;
   ['inc-descripcion','inc-ubicacion','inc-personas','inc-accion'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
@@ -807,21 +794,20 @@ function renderIncidente(inc){
   if(!inc) return '';
   const det = inc.detuvo_operacion || 'No';
   return `<div class="incidente-card">
-    <div class="incidente-title">Incidente Â· ${esc(inc.tipo_incidente||'Seguridad')}</div>
+    <div class="incidente-title">Incidente · ${esc(inc.tipo_incidente||'Seguridad')}</div>
     <div class="incidente-grid">
-      <div><b>Gravedad:</b> ${esc(inc.gravedad||'â€”')}</div>
+      <div><b>Gravedad:</b> ${esc(inc.gravedad||'—')}</div>
       <div><b>Detuvo:</b> ${esc(det)}</div>
-      <div><b>UbicaciÃ³n:</b> ${esc(inc.ubicacion||'â€”')}</div>
-      <div><b>Personas:</b> ${esc(inc.personas||'â€”')}</div>
-      <div class="full"><b>QuÃ© ocurriÃ³:</b> ${esc(inc.descripcion||'â€”')}</div>
-      <div class="full"><b>AcciÃ³n inmediata:</b> ${esc(inc.accion_inmediata||'â€”')}</div>
+      <div><b>Ubicación:</b> ${esc(inc.ubicacion||'—')}</div>
+      <div><b>Personas:</b> ${esc(inc.personas||'—')}</div>
+      <div class="full"><b>Qué ocurrió:</b> ${esc(inc.descripcion||'—')}</div>
+      <div class="full"><b>Acción inmediata:</b> ${esc(inc.accion_inmediata||'—')}</div>
     </div>
   </div>`;
 }
 
-
 // GUARDAR NOTA
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 function guardarNota() {
   const incidenteData = collectIncidente();
   const textoLibre = document.getElementById('nota-texto').value.trim();
@@ -848,7 +834,7 @@ function guardarNota() {
   saveNotas();
   renderFeed();
 
-  // Reset â€” keep tipo active for speed
+  // Reset — keep tipo active for speed
   document.getElementById('nota-texto').value = '';
   document.getElementById('nota-texto').style.height = 'auto';
   capturaFotos = [];
@@ -857,14 +843,14 @@ function guardarNota() {
   resetImpacto();
   resetIncidente();
 
-  toast(`${nota.tipo} Â· ${nota.hora}`);
+  toast(`${nota.tipo} · ${nota.hora}`);
   (tipoActivo === 'SEGURIDAD' ? document.getElementById('inc-descripcion') : document.getElementById('nota-texto'))?.focus();
   document.getElementById('feed').scrollIntoView({ behavior: 'smooth' });
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 // RENDER FEED
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 function renderFeed() {
   const feed  = document.getElementById('feed');
   const empty = document.getElementById('feed-empty');
@@ -898,12 +884,12 @@ function renderFeed() {
 }
 
 function renderNota(n) {
-  // Sanitize tipo for CSS class (ANOMALÃA has accent)
+  // Sanitize tipo for CSS class (ANOMALÍA has accent)
   const tipoClass = `tipo-pill-${n.tipo}`;
 
   const fotosHtml = n.fotos && n.fotos.length
     ? `<div class="note-fotos">${n.fotos.map(f =>
-        `<img class="note-foto" src="${escAttr(f)}" onclick="openLightbox('${escAttr(f)}')">`
+        `<img class="note-foto" src="${escAttr(f)}" onclick="openLightboxFromImg(this)">`
       ).join('')}</div>`
     : '';
 
@@ -929,8 +915,8 @@ function renderNota(n) {
       <span class="note-hora">${esc(n.hora)}</span>
       ${impactoHtml}
       <div class="note-actions">
-        <button class="note-action-btn" onclick="editarNota(${n.id})" title="Editar">âœŽ</button>
-        <button class="note-action-btn del" onclick="borrarNota(${n.id})" title="Borrar">âœ•</button>
+        <button class="note-action-btn" onclick="editarNota(${n.id})" title="Editar">✎</button>
+        <button class="note-action-btn del" onclick="borrarNota(${n.id})" title="Borrar">✕</button>
       </div>
     </div>
     <div class="note-body" id="body-${n.id}">
@@ -946,8 +932,8 @@ function renderNota(n) {
 function buildEditPanel(n) {
   const fotosExisting = (n.fotos || []).map((f, i) => `
     <div class="edit-foto-wrap" id="ef-${n.id}-${i}">
-      <img class="edit-foto-thumb" src="${escAttr(f)}" onclick="openLightbox('${escAttr(f)}')">
-      <button class="edit-foto-del" onclick="removeEditFoto(${n.id},${i})" title="Eliminar foto">âœ•</button>
+      <img class="edit-foto-thumb" src="${escAttr(f)}" onclick="openLightboxFromImg(this)">
+      <button class="edit-foto-del" onclick="removeEditFoto(${n.id},${i})" title="Eliminar foto">✕</button>
     </div>`).join('');
 
   return `
@@ -955,9 +941,9 @@ function buildEditPanel(n) {
       <textarea class="edit-textarea" id="edit-text-${n.id}" oninput="autoResize(this)">${esc(n.texto)}</textarea>
 
       <div class="edit-photos-section">
-        <span class="edit-photos-label">ðŸ“· Fotos</span>
+        <span class="edit-photos-label">📷 Fotos</span>
         <div class="edit-fotos-grid" id="edit-fotos-${n.id}">${fotosExisting}</div>
-        <button class="edit-add-photo-btn" onclick="openEditFotoInput(${n.id})">ðŸ“· + Agregar foto</button>
+        <button class="edit-add-photo-btn" onclick="openEditFotoInput(${n.id})">📷 + Agregar foto</button>
       </div>
 
       <div class="edit-actions">
@@ -967,9 +953,9 @@ function buildEditPanel(n) {
     </div>`;
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// EDIT â€” OPEN / CLOSE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
+// EDIT — OPEN / CLOSE
+// ════════════════════════════════════════
 function editarNota(id) {
   // If another note is being edited, close it first
   if (editingId && editingId !== id) cancelEdit(editingId);
@@ -999,13 +985,13 @@ function cancelEdit(id) {
   if (editingId === id) editingId = null;
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// EDIT â€” TAGS
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
+// EDIT — TAGS
+// ════════════════════════════════════════
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// EDIT â€” PHOTOS
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
+// EDIT — PHOTOS
+// ════════════════════════════════════════
 let editFotoTargetId = null;
 
 function openEditFotoInput(noteId) {
@@ -1054,8 +1040,8 @@ function refreshEditFotosGrid(noteId, fotos) {
   if (!grid) return;
   grid.innerHTML = fotos.map((f, i) => `
     <div class="edit-foto-wrap" id="ef-${noteId}-${i}">
-      <img class="edit-foto-thumb" src="${escAttr(f)}" onclick="openLightbox('${escAttr(f)}')">
-      <button class="edit-foto-del" onclick="removeEditFoto(${noteId},${i})" title="Eliminar foto">âœ•</button>
+      <img class="edit-foto-thumb" src="${escAttr(f)}" onclick="openLightboxFromImg(this)">
+      <button class="edit-foto-del" onclick="removeEditFoto(${noteId},${i})" title="Eliminar foto">✕</button>
     </div>`).join('');
 }
 
@@ -1064,7 +1050,7 @@ function refreshNoteBody(noteId, n) {
   if (!body) return;
   const fotosHtml = n.fotos && n.fotos.length
     ? `<div class="note-fotos">${n.fotos.map(f =>
-        `<img class="note-foto" src="${escAttr(f)}" onclick="openLightbox('${escAttr(f)}')">`
+        `<img class="note-foto" src="${escAttr(f)}" onclick="openLightboxFromImg(this)">`
       ).join('')}</div>` : '';
   const tagsHtml = n.tags && n.tags.length
     ? `<div class="note-tags">${n.tags.map(t =>
@@ -1076,9 +1062,9 @@ function refreshNoteBody(noteId, n) {
     ${fotosHtml}`;
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
-// EDIT â€” SAVE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
+// EDIT — SAVE
+// ════════════════════════════════════════
 function saveEdit(id) {
   const n = notas.find(x => x.id === id);
   if (!n) return;
@@ -1093,11 +1079,11 @@ function saveEdit(id) {
   toast('Nota actualizada');
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 // DELETE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 function borrarNota(id) {
-  if (!confirm('Â¿Borrar esta nota?')) return;
+  if (!confirm('¿Borrar esta nota?')) return;
   notas = notas.filter(n => n.id !== id);
   if (editingId === id) editingId = null;
   saveNotas();
@@ -1105,14 +1091,14 @@ function borrarNota(id) {
   toast('Nota eliminada');
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 // STORAGE
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 function saveNotas() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(notas));
   } catch(e) {
-    toast('âš  Almacenamiento lleno â€” exporta y limpia');
+    toast('⚠ Almacenamiento lleno — exporta y limpia');
   }
 }
 function loadNotas() {
@@ -1129,9 +1115,9 @@ function loadJornada() {
   if (raw) { try { jornada = { ...jornada, ...JSON.parse(raw) }; } catch(e) {} }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 // EXPORT HTML
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 function exportHTML() {
   if (notas.length === 0) { toast('Sin notas que exportar'); return; }
   const now = new Date();
@@ -1139,11 +1125,11 @@ function exportHTML() {
   const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
 
   const tipoColors = {
-    'OBSERVACIÃ“N': '#7a8ba0',
-    'ANOMALÃA':    '#e03b3b',
-    'DESVIACIÃ“N':  '#f07020',
-    'ACCIÃ“N':      '#3b9bbf',
-    'CONDICIÃ“N':   '#d4a017',
+    'OBSERVACIÓN': '#7a8ba0',
+    'ANOMALÍA':    '#e03b3b',
+    'DESVIACIÓN':  '#f07020',
+    'ACCIÓN':      '#3b9bbf',
+    'CONDICIÓN':   '#d4a017',
     'IDEA':        '#3bbf7a',
     'SEGURIDAD':   '#e03b3b'
   };
@@ -1162,19 +1148,19 @@ function exportHTML() {
       <div style="margin-top:10px;border:1px solid #f0b4b4;border-left:4px solid #e03b3b;background:#fff5f5;border-radius:6px;padding:10px 12px;">
         <div style="font-family:monospace;font-size:11px;font-weight:800;color:#b91c1c;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Detalle estructurado de seguridad</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;font-size:12px;color:#333;">
-          <div><strong>Tipo:</strong> ${esc(inc.tipo_incidente||'â€”')}</div>
-          <div><strong>Gravedad:</strong> ${esc(inc.gravedad||'â€”')}</div>
-          <div><strong>UbicaciÃ³n:</strong> ${esc(inc.ubicacion||'â€”')}</div>
-          <div><strong>Detuvo operaciÃ³n:</strong> ${esc(inc.detuvo_operacion||'No')}</div>
-          <div style="grid-column:1/-1;"><strong>Personas:</strong> ${esc(inc.personas||'â€”')}</div>
-          <div style="grid-column:1/-1;"><strong>QuÃ© ocurriÃ³:</strong><br>${esc(inc.descripcion||'â€”')}</div>
-          <div style="grid-column:1/-1;"><strong>AcciÃ³n inmediata:</strong><br>${esc(inc.accion_inmediata||'â€”')}</div>
+          <div><strong>Tipo:</strong> ${esc(inc.tipo_incidente||'—')}</div>
+          <div><strong>Gravedad:</strong> ${esc(inc.gravedad||'—')}</div>
+          <div><strong>Ubicación:</strong> ${esc(inc.ubicacion||'—')}</div>
+          <div><strong>Detuvo operación:</strong> ${esc(inc.detuvo_operacion||'No')}</div>
+          <div style="grid-column:1/-1;"><strong>Personas:</strong> ${esc(inc.personas||'—')}</div>
+          <div style="grid-column:1/-1;"><strong>Qué ocurrió:</strong><br>${esc(inc.descripcion||'—')}</div>
+          <div style="grid-column:1/-1;"><strong>Acción inmediata:</strong><br>${esc(inc.accion_inmediata||'—')}</div>
         </div>
       </div>` : '';
     return `
     <div style="background:${esSeguridad?'#fffafa':'#fff'};border:${esSeguridad?'2px solid #e03b3b':'1px solid #ddd'};border-left:${esSeguridad?'8px solid #e03b3b':'4px solid '+color};border-radius:6px;margin-bottom:${esSeguridad?'16px':'10px'};overflow:hidden;box-shadow:${esSeguridad?'0 8px 22px rgba(224,59,59,.12)':'none'};">
       <div style="padding:${esSeguridad?'9px 12px':'7px 12px'};display:flex;align-items:center;gap:8px;background:${esSeguridad?'#2a1111':'#fafafa'};border-bottom:1px solid ${esSeguridad?'#e03b3b':'#eee'};">
-        <span style="font-family:monospace;font-size:${esSeguridad?'11px':'10px'};font-weight:800;background:${esSeguridad?'#e03b3b':'${color}20'};color:${esSeguridad?'#fff':color};border-radius:3px;padding:3px 8px;">${esSeguridad?'âš  SEGURIDAD':n.tipo}</span>
+        <span style="font-family:monospace;font-size:${esSeguridad?'11px':'10px'};font-weight:800;background:${esSeguridad?'#e03b3b':color+'20'};color:${esSeguridad?'#fff':color};border-radius:3px;padding:3px 8px;">${esSeguridad?'⚠ SEGURIDAD':n.tipo}</span>
         <span style="font-family:monospace;font-size:10px;color:${esSeguridad?'#f0b4b4':'#aaa'};">${n.hora}</span>
         ${n.impacto ? `<span style="font-family:monospace;font-size:9px;background:#f0f0f0;border-radius:20px;padding:2px 8px;margin-left:auto;">${n.impacto}</span>` : ''}
       </div>
@@ -1190,7 +1176,7 @@ function exportHTML() {
   const html = `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>BitÃ¡cora â€” ${esc(jornada.nombre || 'Terreno')}</title>
+<title>Bitácora — ${esc(jornada.nombre || 'Terreno')}</title>
 <style>*{box-sizing:border-box;margin:0;padding:0;}body{font-family:'Segoe UI',Arial,sans-serif;background:#f4f6f8;padding:16px;color:#111;}
 .wrap{max-width:860px;margin:0 auto;}
 .hdr{background:#1a1f2b;color:#f0a500;padding:14px 18px;border-radius:8px;margin-bottom:16px;}
@@ -1198,20 +1184,20 @@ function exportHTML() {
 .hdr-meta{font-family:monospace;font-size:10px;color:#7a8ba0;margin-top:4px;letter-spacing:.06em;}</style>
 </head><body><div class="wrap">
 <div class="hdr">
-  <h1>BitÃ¡cora de Terreno â€” ${esc(jornada.nombre || 'Sin nombre')}</h1>
+  <h1>Bitácora de Terreno — ${esc(jornada.nombre || 'Sin nombre')}</h1>
   <div class="hdr-meta">
-    ${jornada.equipo   ? `Equipo: ${esc(jornada.equipo)} Â· ` : ''}
-    ${jornada.operador ? `Operador: ${esc(jornada.operador)} Â· ` : ''}
-    ${jornada.turno    ? `Turno: ${esc(jornada.turno)} Â· ` : ''}
-    ${notas.length} notas Â· Exportado: ${now.toLocaleString('es-CL')}
+    ${jornada.equipo   ? `Equipo: ${esc(jornada.equipo)} · ` : ''}
+    ${jornada.operador ? `Operador: ${esc(jornada.operador)} · ` : ''}
+    ${jornada.turno    ? `Turno: ${esc(jornada.turno)} · ` : ''}
+    ${notas.length} notas · Exportado: ${now.toLocaleString('es-CL')}
   </div>
 </div>
 ${notasHTML}
-<div style="font-size:9px;color:#bbb;font-family:monospace;text-align:right;margin-top:12px;">ZALINEL SpA Â· BitÃ¡cora de Terreno v4.0 Â· ${filename}</div>
+<div style="font-size:9px;color:#bbb;font-family:monospace;text-align:right;margin-top:12px;">ZALINEL SpA · Bitácora de Terreno v4.0 · ${filename}</div>
 </div></body></html>`;
 
   download(filename, html, 'text/html;charset=utf-8');
-  toast(`HTML Â· ${notas.length} notas`);
+  toast(`HTML · ${notas.length} notas`);
 }
 
 function exportJSON() {
@@ -1219,42 +1205,49 @@ function exportJSON() {
   const data = { jornada, version: 4.0, exportado: new Date().toISOString(), notas };
   const filename = buildFilename().replace('.html', '.json');
   download(filename, JSON.stringify(data, null, 2), 'application/json;charset=utf-8');
-  toast(`JSON Â· ${filename}`);
+  toast(`JSON · ${filename}`);
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 // CLEAR
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 function clearAll() {
-  if (!confirm(`Â¿Borrar las ${notas.length} notas? No se puede deshacer.`)) return;
+  if (!confirm(`¿Borrar las ${notas.length} notas? No se puede deshacer.`)) return;
   notas = [];
   saveNotas();
   renderFeed();
   toast('Jornada reiniciada');
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 // LIGHTBOX
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 function openLightbox(src) {
+  if(!src) return;
   document.getElementById('lightbox-img').src = src;
   document.getElementById('lightbox').classList.add('open');
+}
+function openLightboxFromImg(img) {
+  openLightbox(img?.currentSrc || img?.src || '');
 }
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
   document.getElementById('lightbox-img').src = '';
 }
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') closeLightbox();
+});
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 // UTILITIES
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════
 function pad(n) { return String(n).padStart(2,'0'); }
 function isoDate(d) { return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
 function esc(s) {
   return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 function escAttr(s) {
-  // For use in onclick="..." attributes â€” escape single quotes too
+  // For use in onclick="..." attributes — escape single quotes too
   return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
 function autoResize(el) {
@@ -1293,4 +1286,3 @@ function flash(msg) {
 </script>
 </body>
 </html>
-

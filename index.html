@@ -1359,36 +1359,63 @@ function buildFilename() {
     .replace(/[^a-zA-Z0-9]/g,'').substring(0,8).toUpperCase() || 'BIT';
   return `BIT_${slug(jornada.nombre)}_${dd}${mm}${yy}_${hhmmss}.html`;
 }
-async function download(filename, content, type) {
-  const blob = new Blob([content], { type });
+// ── Configuración Dropbox ─────────────────────────────────────
+// Token de acceso generado en dropbox.com/developers/apps
+// Reemplazar con el token real antes de subir al repo
+const DROPBOX_TOKEN = 'sl.u.AGdTxDg18goVK4t0nIx6QP2gRAWLX84Q5w4KU5TwDoM2TKxY_6BEx_ad3ZusNG5DX4p64_eXPnpJ7BSrKMIkmFtC-UZnmGVhIR1nniTH4K8gHRZIX1uR0QCNrFaAtA1ZVqHgyCX3LbwNMBZ8GuYkuiC8qSHDZXz3lhXKU5ZN5AlmjMVobuTwJAoFXGrYWdNtfZ4Y2sHm07hjbZydMqkveoaa8SeQmASP9X1JgxLzLxjK9K7g0Tn12S4uUFtD4Bd1RRRvdEHLnQ2mhAfK_iliC1FQ12oqubmIqiYkObM9GvWUMlC4EhOyjIoMfDtSB5AkXD65RIQpRsRy3f5dqBBzyeWuzXIkXIEN0ZsyhJPf8HXozZ9FFVeHLHN8opg2dGxPyMpnI0-dLtUiFAYEhsTmIco8aQxFwboGUjkToQ_8p3HtjJh0j6ENFw0cWQwO-kYz51yFTH2Ylq963BOyh5jG4Ga0sR0yfYbZDudP3Y1Svld2EgoIUm9kWbX3B8L7UQeuu_KA4YuRhhZjpOkH6QkUJUnfEUQOnJq6Kv5LcrQKrZBHKGXtupgBhZymfXtPzz0QgpeaglUya6CVMcBd_TiKQVJjVT1lYDTZU5xB23GODMHHr5HqynWJiBWBKh6qlSGWoomPv79dqRlDVz-15UT3XNUKGjvwLtlc2MY8Dr6VNHcllD8ZQFnqxdETzGPlmBjk-tYiq1BlQEmbM_zAPToC0bBJePulXO5AU2sqPh0YXxpBfTY-6GVvV5CWu69EF9UyuYS5kXKb1NP9SSAMg7CrvUOeWorzHn_nSJ5oPnyB7mIgzlfxjKaCRk1zLGlSCcbwcFBzETEDpQwwTBWj3MkyhgtvPRs5ApRKiiNUKxwGn8EOGCtyZb-gzqZ_4At0PcehrO1bnTzIPfIX2C4Bo_2oSVYe1fgVqeg_dlRcF4Tb6yrPb3wiQvTYCc4MRpYEZ0C3O1V2-o52aVHq8tgzZMsQ9OrC_H8EGkl0gvGnNrv2ksQVV74si_sU8lqitISiSFwwZLRjhlh6wxQ5-tpYOd-oT82CXvjuLStn2twRKystREyNo-hhzs7Zp_CYP15LF_NaLZpL1JLoYLPD8CF0oR_8xKN7k9XyD4BEEQgKijY8yZUzN9Rk-i09d4L_EygCyuqgT7EUYpS5VNDqC13rHsdsoPJc-BDn1d-F0A9i0gj3X9WzJM0ptfJfSzrrIUsvHq3xGcbOWfEvZzCPHg65LqOR9nou4Tbfuk4qHxvBRngZI68uTOgKqAely9WrqW6YnMx2--XLgSrMCwX-0bpNMEcmqDlBDPS9wmet9wbaf9kX1JLLwTtvXa9ee7gq7Kd5qvd2i3O1Ygt2IlEK0Jd-B5Y7jDmaBI6APmbLt2ZXaAOVeW9_eg771eI1JYUW3zsioDdI0P3kygZQpjdTJxiYrnJ2YColaDdU9BV-PtxSsWBzBVbwtD78680cYu0qH-sjomL8tIs';
+const DROPBOX_PATH  = '/ZALINEL SUITE/data/bitacora';
 
-  // Opción 1: Share API con archivos (Chrome Android reciente)
+async function subirADropbox(filename, content) {
+  const destino = DROPBOX_PATH + '/' + filename;
+  try {
+    const resp = await fetch('https://content.dropboxapi.com/2/files/upload', {
+      method: 'POST',
+      headers: {
+        'Authorization':    'Bearer ' + DROPBOX_TOKEN,
+        'Content-Type':     'application/octet-stream',
+        'Dropbox-API-Arg':  JSON.stringify({
+          path:       destino,
+          mode:       'add',
+          autorename: true,
+          mute:       false,
+        }),
+      },
+      body: content,
+    });
+    if (resp.ok) {
+      const data = await resp.json();
+      toast('✓ Guardado en Dropbox · ' + filename);
+      return true;
+    } else {
+      const err = await resp.json().catch(() => ({}));
+      console.warn('[Bitácora] Dropbox error:', err);
+      return false;
+    }
+  } catch(e) {
+    console.warn('[Bitácora] Dropbox sin conexión:', e);
+    return false;
+  }
+}
+
+async function download(filename, content, type) {
+  // Intentar subir a Dropbox primero
+  if (DROPBOX_TOKEN && DROPBOX_TOKEN !== 'PEGAR_TOKEN_AQUI') {
+    const ok = await subirADropbox(filename, content);
+    if (ok) return; // subido correctamente — no descargar
+  }
+
+  // Fallback: Share API (Android)
+  const blob = new Blob([content], { type });
   if (navigator.canShare && navigator.canShare({ files: [new File([blob], filename, { type })] })) {
     try {
-      await navigator.share({
-        files: [new File([blob], filename, { type })],
-        title: filename,
-      });
-      return;
-    } catch(e) {
-      if (e.name === 'AbortError') return;
-      // Continuar al siguiente método
-    }
-  }
-
-  // Opción 2: Share API sin archivos — compartir como URL data (más compatible)
-  if (navigator.share) {
-    try {
-      const reader = new FileReader();
-      const dataUrl = await new Promise(res => { reader.onload = e => res(e.target.result); reader.readAsDataURL(blob); });
-      await navigator.share({ title: filename, text: filename, url: dataUrl });
+      await navigator.share({ files: [new File([blob], filename, { type })], title: filename });
       return;
     } catch(e) {
       if (e.name === 'AbortError') return;
     }
   }
 
-  // Fallback: descarga directa (PC o browsers sin Share API)
+  // Fallback final: descarga directa
   const url = URL.createObjectURL(blob);
   const a   = document.createElement('a');
   a.href = url; a.download = filename; a.click();

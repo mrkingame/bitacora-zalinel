@@ -593,7 +593,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 <!-- ── EXPORT PANEL ── -->
 <div id="export-panel">
   <div class="export-row">
-    <button class="exp-btn exp-html" onclick="exportHTML()">⬇ Exportar HTML</button>
+    <button class="exp-btn exp-html" onclick="exportHTML()">⬇ Exportar</button>
     <button class="exp-btn exp-clear" onclick="clearAll()">🗑 Borrar todo</button>
   </div>
 </div>
@@ -881,7 +881,7 @@ function guardarNota() {
   const nota = {
     id:      now.getTime(),
     fecha:   isoDate(now),
-    hora:    `${pad(now.getHours())}:${pad(now.getMinutes())}`,
+    hora:    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`,
     timestamp: now.toISOString(),
     tipo:    tipoActivo,
     impacto: impactoActivo,
@@ -1351,13 +1351,13 @@ function autoResize(el) {
 }
 function buildFilename() {
   const d = new Date();
-  const dd   = pad(d.getDate());
-  const mm   = pad(d.getMonth()+1);
-  const yy   = String(d.getFullYear()).slice(-2);
-  const hhmm = pad(d.getHours()) + pad(d.getMinutes());
+  const dd  = pad(d.getDate());
+  const mm  = pad(d.getMonth()+1);
+  const yy  = String(d.getFullYear()).slice(-2);
+  const hhmmss = pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
   const slug = s => (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^a-zA-Z0-9]/g,'').substring(0,8).toUpperCase() || 'BIT';
-  return `BIT_${slug(jornada.nombre)}_${dd}${mm}${yy}_${hhmm}.html`;
+  return `BIT_${slug(jornada.nombre)}_${dd}${mm}${yy}_${hhmmss}.html`;
 }
 async function download(filename, content, type) {
   const blob = new Blob([content], { type });

@@ -1185,7 +1185,7 @@ function loadJornada() {
 // ════════════════════════════════════════
 // EXPORT HTML
 // ════════════════════════════════════════
-function exportHTML() {
+async function exportHTML() {
   if (notas.length === 0) { toast('Sin notas que exportar'); return; }
   const now = new Date();
   const filename = buildFilename();
@@ -1265,7 +1265,7 @@ ${notasHTML}
   <div style="font-size:9px;color:#bbb;font-family:monospace;text-align:right;margin-top:12px;">ZALINEL SpA · Bitácora de Terreno V6.0 · ${filename}</div>
 </div></body></html>`;
 
-  download(filename, html, 'text/html;charset=utf-8');
+  await download(filename, html, 'text/html;charset=utf-8');
   toast(`HTML · ${notas.length} notas`);
 }
 

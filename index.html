@@ -1361,21 +1361,34 @@ function buildFilename() {
 }
 async function download(filename, content, type) {
   const blob = new Blob([content], { type });
-  // Intentar Share API (Android Chrome, iOS Safari 15+)
-  // Permite depositar directamente en OneDrive u otra app instalada
+
+  // Opción 1: Share API con archivos (Chrome Android reciente)
   if (navigator.canShare && navigator.canShare({ files: [new File([blob], filename, { type })] })) {
     try {
       await navigator.share({
         files: [new File([blob], filename, { type })],
         title: filename,
       });
-      return; // compartido correctamente — no descargar
+      return;
     } catch(e) {
-      if (e.name === 'AbortError') return; // usuario canceló — no descargar tampoco
-      // Otro error: caer al método clásico
+      if (e.name === 'AbortError') return;
+      // Continuar al siguiente método
     }
   }
-  // Fallback: descarga directa (PC, browsers sin Share API)
+
+  // Opción 2: Share API sin archivos — compartir como URL data (más compatible)
+  if (navigator.share) {
+    try {
+      const reader = new FileReader();
+      const dataUrl = await new Promise(res => { reader.onload = e => res(e.target.result); reader.readAsDataURL(blob); });
+      await navigator.share({ title: filename, text: filename, url: dataUrl });
+      return;
+    } catch(e) {
+      if (e.name === 'AbortError') return;
+    }
+  }
+
+  // Fallback: descarga directa (PC o browsers sin Share API)
   const url = URL.createObjectURL(blob);
   const a   = document.createElement('a');
   a.href = url; a.download = filename; a.click();

@@ -1186,7 +1186,19 @@ function loadJornada() {
 // EXPORT HTML
 // ════════════════════════════════════════
 async function exportHTML() {
-  if (notas.length === 0) { toast('Sin notas que exportar'); return; }
+  // Filtrar solo notas no exportadas aún
+  const exportedIds = getExportedIds();
+  const notasNuevas = notas.filter(n => !exportedIds.has(n.id));
+
+  if (notasNuevas.length === 0) {
+    toast('✓ Todo ya está exportado');
+    return;
+  }
+
+  // Deshabilitar botón para evitar doble click
+  const btn = document.querySelector('.exp-html');
+  if (btn) { btn.disabled = true; btn.textContent = '↑ Subiendo…'; }
+
   const now = new Date();
   const filename = buildFilename();
   const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
@@ -1201,7 +1213,7 @@ async function exportHTML() {
     'SEGURIDAD':   '#e03b3b'
   };
 
-  const notasHTML = notas.map(n => {
+  const notasHTML = notasNuevas.map(n => {
     const color = tipoColors[n.tipo] || '#aaa';
     const esSeguridad = n.tipo === 'SEGURIDAD' || !!n.incidente;
     const fotosH = (n.fotos || []).map(f =>
@@ -1266,7 +1278,14 @@ ${notasHTML}
 </div></body></html>`;
 
   await download(filename, html, 'text/html;charset=utf-8');
-  toast(`HTML · ${notas.length} notas`);
+
+  // Marcar notas como exportadas
+  markAsExported(notasNuevas.map(n => n.id));
+
+  // Restaurar botón
+  if (btn) { btn.disabled = false; btn.textContent = '⬇ Exportar'; }
+
+  toast(`✓ ${notasNuevas.length} nota${notasNuevas.length > 1 ? 's' : ''} exportada${notasNuevas.length > 1 ? 's' : ''}`);
 }
 
 function exportJSON() {
@@ -1359,6 +1378,19 @@ function buildFilename() {
     .replace(/[^a-zA-Z0-9]/g,'').substring(0,8).toUpperCase() || 'BIT';
   return `BIT_${slug(jornada.nombre)}_${dd}${mm}${yy}_${hhmmss}.html`;
 }
+// ── Tracking de notas exportadas ──────────────────────────────
+// Guarda IDs de notas ya subidas a Dropbox para evitar duplicados
+const EXPORTED_KEY = 'zalinel_bitacora_exported';
+
+function getExportedIds() {
+  try { return new Set(JSON.parse(localStorage.getItem(EXPORTED_KEY) || '[]')); } catch(e) { return new Set(); }
+}
+function markAsExported(ids) {
+  const all = getExportedIds();
+  ids.forEach(id => all.add(id));
+  try { localStorage.setItem(EXPORTED_KEY, JSON.stringify([...all])); } catch(e) {}
+}
+
 // ── Configuración Dropbox ─────────────────────────────────────
 // Token de acceso generado en dropbox.com/developers/apps
 // Reemplazar con el token real antes de subir al repo

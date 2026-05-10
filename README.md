@@ -7,6 +7,7 @@ Aplicacion movil HTML de registro en terreno asociada a `ZALINEL SUITE`.
 La version operativa vigente se toma desde:
 
 - `index.html` (ZAL-TOOL-BITACORA-TERRENO-V6_0)
+- `ZAL-TOOL-BITACORA-TERRENO-V6_0.html`
 
 ## Instalacion en celular
 

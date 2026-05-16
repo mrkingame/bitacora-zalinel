@@ -87,6 +87,8 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 .j-label{font-family:var(--cond);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-dim);}
 .j-input{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);font-family:var(--sans);font-size:14px;padding:8px 10px;outline:none;width:100%;transition:border-color .15s;}
 .j-input:focus{border-color:var(--accent);}
+.j-input[readonly]{color:var(--text-dim);background:rgba(30,37,51,.55);border-color:rgba(42,51,69,.7);}
+select.j-input{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--text-dim) 50%),linear-gradient(135deg,var(--text-dim) 50%,transparent 50%);background-position:calc(100% - 16px) 50%,calc(100% - 11px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:28px;}
 .j-save{background:var(--accent);color:#000;font-family:var(--cond);font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:none;border-radius:var(--r);padding:9px 18px;cursor:pointer;width:100%;margin-top:4px;}
 
 /* ── CAPTURE ZONE ── */
@@ -467,11 +469,17 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
   <div class="j-row">
     <div class="j-field">
       <label class="j-label">Nombre de jornada</label>
-      <input class="j-input" id="j-nombre" placeholder="ej. Turno mañana" maxlength="40">
+      <input class="j-input" id="j-nombre" readonly aria-readonly="true">
     </div>
     <div class="j-field">
       <label class="j-label">Equipo / zona</label>
-      <input class="j-input" id="j-equipo" placeholder="ej. ZH780L — Célula 3">
+      <select class="j-input" id="j-equipo">
+        <option value="Taller productivo ZH780L-40">Taller productivo ZH780L-40</option>
+        <option value="Bodega principal">Bodega principal</option>
+        <option value="Taller productivo general">Taller productivo general</option>
+        <option value="Exterior">Exterior</option>
+        <option value="Casino">Casino</option>
+      </select>
     </div>
   </div>
   <div class="j-row">
@@ -481,7 +489,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
     </div>
     <div class="j-field">
       <label class="j-label">Turno</label>
-      <input class="j-input" id="j-turno" placeholder="ej. Mañana / Tarde">
+      <input class="j-input" id="j-turno" readonly aria-readonly="true">
     </div>
   </div>
   <button class="j-save" onclick="saveJornada()">Guardar jornada</button>
@@ -491,7 +499,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
 <section id="capture">
   <!-- Tipos -->
   <div class="tipo-row" id="tipo-row">
-    <button class="tipo-btn active" data-tipo="OBSERVACIÓN" onclick="selTipo('OBSERVACIÓN')">OBSERVACIÓN</button>
+    <button class="tipo-btn"        data-tipo="OBSERVACIÓN" onclick="selTipo('OBSERVACIÓN')">OBSERVACIÓN</button>
     <button class="tipo-btn"        data-tipo="ANOMALÍA"    onclick="selTipo('ANOMALÍA')">ANOMALÍA</button>
     <button class="tipo-btn"        data-tipo="DESVIACIÓN"  onclick="selTipo('DESVIACIÓN')">DESVIACIÓN</button>
     <button class="tipo-btn"        data-tipo="ACCIÓN"      onclick="selTipo('ACCIÓN')">ACCIÓN</button>
@@ -543,11 +551,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
   <!-- Modo seguridad estructurado -->
   <div id="incidente-panel">
     <div class="incidente-field">
-      <label>Tipo de incidente</label>
+      <label>Tipo de evento</label>
       <select id="inc-tipo">
-        <option value="Accidente">Accidente</option>
-        <option value="Casi accidente">Casi accidente</option>
         <option value="Condición insegura">Condición insegura</option>
+        <option value="Casi accidente">Casi accidente</option>
+        <option value="Accidente">Accidente</option>
       </select>
     </div>
     <div class="incidente-field">
@@ -561,13 +569,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15
     <div class="incidente-field">
       <label>Ubicación</label>
       <input id="inc-ubicacion" placeholder="Ej. mezclador, campana, piso">
-    </div>
-    <div class="incidente-field">
-      <label>¿Se detuvo operación?</label>
-      <select id="inc-detencion">
-        <option value="No">No</option>
-        <option value="Sí">Sí</option>
-      </select>
     </div>
     <div class="incidente-field full">
       <label>Personas involucradas / expuestas</label>
@@ -635,11 +636,13 @@ window.addEventListener('beforeunload', (e) => {
 // ════════════════════════════════════════
 const STORAGE_KEY = 'zalinel_bitacora_v39';
 const JORNADA_KEY = 'zalinel_jornada_v1';
+const RESPONSABLE_KEY = 'zalinel_bitacora_responsable_v1';
+const DEFAULT_EQUIPO = 'Taller productivo ZH780L-40';
 let notas         = [];
 let capturaFotos  = [];
-let tipoActivo    = 'OBSERVACIÓN';
+let tipoActivo    = null;
 let impactoActivo = null;
-let jornada       = { nombre:'', equipo:'', responsable:'', turno:'' };
+let jornada       = { nombre:'', equipo:DEFAULT_EQUIPO, responsable:'', turno:'' };
 let editingId     = null;
 let criticidadActiva = 'MEDIA';
 
@@ -657,13 +660,20 @@ document.addEventListener('DOMContentLoaded', () => {
   renderFeed();
   updateHdrFecha();
   updateDropboxUi();
-  document.getElementById('j-nombre').value   = '';
-  document.getElementById('j-equipo').value   = '';
-  document.getElementById('j-responsable').value = '';
-  document.getElementById('j-turno').value    = '';
+  syncJornadaAuto();
+  fillJornadaForm();
   updateJornadaDisplay();
+  setInterval(() => {
+    syncJornadaAuto();
+    const panelOpen = document.getElementById('jornada-panel')?.classList.contains('open');
+    if (!panelOpen) fillJornadaForm();
+    else {
+      document.getElementById('j-nombre').value = jornada.nombre;
+      document.getElementById('j-turno').value = jornada.turno;
+    }
+    updateJornadaDisplay();
+  }, 60000);
   resetCriticidad();
-  if (!jornada.nombre) toggleJornada();
   setTimeout(() => document.getElementById('nota-texto').focus(), 300);
   handleDropboxOAuthRedirect();
 });
@@ -676,14 +686,42 @@ function toggleJornada() {
   const banner = document.getElementById('jornada-banner');
   const open   = panel.classList.toggle('open');
   banner.classList.toggle('editing', open);
+  if (open) {
+    syncJornadaAuto();
+    fillJornadaForm();
+  }
+}
+function getAutoJornadaNombre(now = new Date()) {
+  const dias = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+  return `${dias[now.getDay()]} ${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`;
+}
+function getAutoTurno(now = new Date()) {
+  return now.getHours() < 12 ? 'Mañana' : 'Tarde';
+}
+function syncJornadaAuto() {
+  jornada.nombre = getAutoJornadaNombre();
+  jornada.turno = getAutoTurno();
+  jornada.equipo = jornada.equipo || DEFAULT_EQUIPO;
+  jornada.responsable = jornada.responsable || '';
+}
+function fillJornadaForm() {
+  const nombreEl = document.getElementById('j-nombre');
+  const equipoEl = document.getElementById('j-equipo');
+  const responsableEl = document.getElementById('j-responsable');
+  const turnoEl = document.getElementById('j-turno');
+  if (nombreEl) nombreEl.value = jornada.nombre;
+  if (equipoEl) equipoEl.value = jornada.equipo || DEFAULT_EQUIPO;
+  if (responsableEl) responsableEl.value = jornada.responsable || '';
+  if (turnoEl) turnoEl.value = jornada.turno;
 }
 function saveJornada() {
-  jornada.nombre   = document.getElementById('j-nombre').value.trim()   || 'Jornada';
-  jornada.equipo   = document.getElementById('j-equipo').value.trim();
+  syncJornadaAuto();
+  jornada.equipo   = document.getElementById('j-equipo').value || DEFAULT_EQUIPO;
   jornada.responsable = document.getElementById('j-responsable').value.trim();
   delete jornada.operador;
-  jornada.turno    = document.getElementById('j-turno').value.trim();
   localStorage.setItem(JORNADA_KEY, JSON.stringify(jornada));
+  localStorage.setItem(RESPONSABLE_KEY, jornada.responsable);
+  fillJornadaForm();
   updateJornadaDisplay();
   toggleJornada();
   toast('Jornada guardada');
@@ -717,6 +755,12 @@ function selTipo(tipo) {
   } else {
     document.getElementById('nota-texto').focus();
   }
+}
+
+function resetTipo() {
+  tipoActivo = null;
+  document.querySelectorAll('.tipo-btn').forEach(b => b.classList.remove('active'));
+  updateSeguridadMode();
 }
 
 function updateSeguridadMode(){
@@ -847,7 +891,6 @@ function collectIncidente(){
     ubicacion: document.getElementById('inc-ubicacion')?.value.trim() || '',
     personas: document.getElementById('inc-personas')?.value.trim() || '',
     gravedad: document.getElementById('inc-gravedad')?.value || '',
-    detuvo_operacion: document.getElementById('inc-detencion')?.value || 'No',
     accion_inmediata: document.getElementById('inc-accion')?.value.trim() || '',
   };
 }
@@ -856,20 +899,17 @@ function resetIncidente(){
   ['inc-descripcion','inc-ubicacion','inc-personas','inc-accion'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
-  const tipo=document.getElementById('inc-tipo'); if(tipo) tipo.value='Accidente';
+  const tipo=document.getElementById('inc-tipo'); if(tipo) tipo.value='Condición insegura';
   const gravedad=document.getElementById('inc-gravedad'); if(gravedad) gravedad.value='Baja';
-  const det=document.getElementById('inc-detencion'); if(det) det.value='No';
   updateSeguridadMode();
 }
 
 function renderIncidente(inc){
   if(!inc) return '';
-  const det = inc.detuvo_operacion || 'No';
   return `<div class="incidente-card">
-    <div class="incidente-title">Incidente · ${esc(inc.tipo_incidente||'Seguridad')}</div>
+    <div class="incidente-title">Seguridad · ${esc(inc.tipo_incidente||'Evento')}</div>
     <div class="incidente-grid">
       <div><b>Gravedad:</b> ${esc(inc.gravedad||'—')}</div>
-      <div><b>Detuvo:</b> ${esc(det)}</div>
       <div><b>Ubicación:</b> ${esc(inc.ubicacion||'—')}</div>
       <div><b>Personas:</b> ${esc(inc.personas||'—')}</div>
       <div class="full"><b>Qué ocurrió:</b> ${esc(inc.descripcion||'—')}</div>
@@ -881,6 +921,12 @@ function renderIncidente(inc){
 // GUARDAR NOTA
 // ════════════════════════════════════════
 function guardarNota() {
+  syncJornadaAuto();
+  if (!tipoActivo) {
+    flash('Debe elegir un tipo de nota antes de continuar');
+    document.getElementById('tipo-row')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
   const incidenteData = collectIncidente();
   const textoLibre = document.getElementById('nota-texto').value.trim();
   let texto = incidenteData ? (incidenteData.descripcion || incidenteData.accion_inmediata) : textoLibre;
@@ -908,7 +954,7 @@ function guardarNota() {
   saveNotas();
   renderFeed();
 
-  // Reset — keep tipo active for speed
+  // Reset — require a fresh type choice for the next note
   document.getElementById('nota-texto').value = '';
   document.getElementById('nota-texto').style.height = 'auto';
   capturaFotos = [];
@@ -917,9 +963,10 @@ function guardarNota() {
   resetImpacto();
   resetCriticidad();
   resetIncidente();
+  resetTipo();
 
   toast(`${nota.tipo} · ${nota.hora}`);
-  (tipoActivo === 'SEGURIDAD' ? document.getElementById('inc-descripcion') : document.getElementById('nota-texto'))?.focus();
+  document.getElementById('nota-texto')?.focus();
   document.getElementById('feed').scrollIntoView({ behavior: 'smooth' });
 }
 
@@ -1191,23 +1238,22 @@ function loadNotas() {
   if (raw) { try { notas = JSON.parse(raw); } catch(e) { notas = []; } }
 }
 function loadJornada() {
-  jornada = { nombre:'', equipo:'', responsable:'', turno:'' };
-  try { localStorage.removeItem(JORNADA_KEY); } catch(e) {}
+  jornada = { nombre:'', equipo:DEFAULT_EQUIPO, responsable:'', turno:'' };
+  try {
+    const raw = localStorage.getItem(JORNADA_KEY);
+    if (raw) jornada = { ...jornada, ...JSON.parse(raw) };
+  } catch(e) {}
+  try {
+    const responsable = localStorage.getItem(RESPONSABLE_KEY);
+    if (responsable !== null) jornada.responsable = responsable;
+  } catch(e) {}
+  syncJornadaAuto();
 }
 
 // ════════════════════════════════════════
 // EXPORT HTML
 // ════════════════════════════════════════
-async function exportHTML() {
-  const exportedIds = getExportedIds();
-  const notasNuevas = notas.filter(n => !exportedIds.has(n.id));
-  if (notasNuevas.length === 0) { toast('✓ Todo ya está exportado'); return; }
-  const btn = document.querySelector('.exp-html');
-  if (btn) { btn.disabled = true; btn.textContent = '↑ Subiendo…'; }
-  const now = new Date();
-  const filename = buildFilename();
-  const meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
-
+function buildExportHTMLDocument(exportNotes, filename, now) {
   const tipoColors = {
     'OBSERVACIÓN': '#7a8ba0',
     'ANOMALÍA':    '#e03b3b',
@@ -1218,7 +1264,7 @@ async function exportHTML() {
     'SEGURIDAD':   '#e03b3b'
   };
 
-  const notasHTML = notasNuevas.map(n => {
+  const notasHTML = exportNotes.map(n => {
     const color = tipoColors[n.tipo] || '#aaa';
     const esSeguridad = n.tipo === 'SEGURIDAD' || !!n.incidente;
     const fotosH = (n.fotos || []).map(f =>
@@ -1232,10 +1278,9 @@ async function exportHTML() {
       <div style="margin-top:10px;border:1px solid #f0b4b4;border-left:4px solid #e03b3b;background:#fff5f5;border-radius:6px;padding:10px 12px;">
         <div style="font-family:monospace;font-size:11px;font-weight:800;color:#b91c1c;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;">Detalle estructurado de seguridad</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;font-size:12px;color:#333;">
-          <div><strong>Tipo:</strong> ${esc(inc.tipo_incidente||'—')}</div>
+          <div><strong>Tipo de evento:</strong> ${esc(inc.tipo_incidente||'—')}</div>
           <div><strong>Gravedad:</strong> ${esc(inc.gravedad||'—')}</div>
           <div><strong>Ubicación:</strong> ${esc(inc.ubicacion||'—')}</div>
-          <div><strong>Detuvo operación:</strong> ${esc(inc.detuvo_operacion||'No')}</div>
           <div style="grid-column:1/-1;"><strong>Personas:</strong> ${esc(inc.personas||'—')}</div>
           <div style="grid-column:1/-1;"><strong>Qué ocurrió:</strong><br>${esc(inc.descripcion||'—')}</div>
           <div style="grid-column:1/-1;"><strong>Acción inmediata:</strong><br>${esc(inc.accion_inmediata||'—')}</div>
@@ -1259,7 +1304,7 @@ async function exportHTML() {
     </div>`;
   }).join('');
 
-  const html = `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Bitácora — ${esc(jornada.nombre || 'Terreno')}</title>
@@ -1275,20 +1320,76 @@ async function exportHTML() {
     ${jornada.equipo   ? `Equipo: ${esc(jornada.equipo)} · ` : ''}
     ${(jornada.responsable || jornada.operador) ? `Responsable: ${esc(jornada.responsable || jornada.operador)} · ` : ''}
     ${jornada.turno    ? `Turno: ${esc(jornada.turno)} · ` : ''}
-    ${notas.length} notas · Exportado: ${now.toLocaleString('es-CL')}
+    ${exportNotes.length} notas · Exportado: ${now.toLocaleString('es-CL')}
   </div>
 </div>
 ${notasHTML}
   <div style="font-size:9px;color:#bbb;font-family:monospace;text-align:right;margin-top:12px;">ZALINEL SpA · Bitácora de Terreno V6.0 · ${filename}</div>
 </div></body></html>`;
+}
 
-  await download(filename, html, 'text/html;charset=utf-8');
-  markAsExported(notasNuevas.map(n => n.id));
+async function exportHTML() {
+  syncJornadaAuto();
+  const exportIndex = loadExportIndex();
+  const legacyExportedIds = getExportedIds();
+  const nuevas = [];
+  const archivosActualizados = new Set();
+
+  notas.forEach(n => {
+    const id = String(n.id);
+    const firma = noteExportSignature(n);
+    const rec = exportIndex.notes[id];
+    if (rec && rec.filename) {
+      if (rec.signature !== firma) archivosActualizados.add(rec.filename);
+      return;
+    }
+    if (!legacyExportedIds.has(n.id) && !legacyExportedIds.has(id)) nuevas.push(n);
+  });
+
+  if (nuevas.length === 0 && archivosActualizados.size === 0) {
+    toast('✓ Todo ya está exportado');
+    return;
+  }
+
+  const btn = document.querySelector('.exp-html');
+  if (btn) { btn.disabled = true; btn.textContent = '↑ Subiendo…'; }
+
+  let notasExportadas = 0;
+  let archivosReescritos = 0;
+
+  for (const filename of archivosActualizados) {
+    const notasArchivo = getNotesForExportFile(filename, exportIndex);
+    if (!notasArchivo.length) continue;
+    const html = buildExportHTMLDocument(notasArchivo, filename, new Date());
+    await download(filename, html, 'text/html;charset=utf-8', { overwrite: true });
+    notasArchivo.forEach(n => {
+      exportIndex.notes[String(n.id)] = { filename, signature: noteExportSignature(n) };
+    });
+    archivosReescritos++;
+  }
+
+  if (nuevas.length) {
+    const filename = buildFilename();
+    const html = buildExportHTMLDocument(nuevas, filename, new Date());
+    await download(filename, html, 'text/html;charset=utf-8', { overwrite: false });
+    nuevas.forEach(n => {
+      exportIndex.notes[String(n.id)] = { filename, signature: noteExportSignature(n) };
+    });
+    markAsExported(nuevas.map(n => n.id));
+    notasExportadas = nuevas.length;
+  }
+
+  saveExportIndex(exportIndex);
   if (btn) { btn.disabled = false; btn.textContent = '⬇ Exportar'; }
-  toast(`✓ ${notasNuevas.length} nota${notasNuevas.length > 1 ? 's' : ''} exportada${notasNuevas.length > 1 ? 's' : ''}`);
+
+  const partes = [];
+  if (notasExportadas) partes.push(`${notasExportadas} nota${notasExportadas > 1 ? 's' : ''} nueva${notasExportadas > 1 ? 's' : ''}`);
+  if (archivosReescritos) partes.push(`${archivosReescritos} archivo${archivosReescritos > 1 ? 's' : ''} actualizado${archivosReescritos > 1 ? 's' : ''}`);
+  toast('✓ ' + partes.join(' · '));
 }
 
 function exportJSON() {
+  syncJornadaAuto();
   if (notas.length === 0) { toast('Sin notas que exportar'); return; }
   notas.forEach((nota, index) => {
     const fechaPart = String(nota.fecha || '').match(/(\d{2})\/(\d{2})\/(\d{4})/);
@@ -1369,6 +1470,7 @@ function autoResize(el) {
   el.style.height = Math.min(el.scrollHeight, 300) + 'px';
 }
 function buildFilename() {
+  syncJornadaAuto();
   const d = new Date();
   const dd  = pad(d.getDate());
   const mm  = pad(d.getMonth()+1);
@@ -1376,10 +1478,11 @@ function buildFilename() {
   const hhmmss = pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
   const slug = s => (s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
     .replace(/[^a-zA-Z0-9]/g,'').substring(0,8).toUpperCase() || 'BIT';
-  return `BIT_${slug(jornada.nombre)}_${dd}${mm}${yy}_${hhmmss}.html`;
+  return `BIT_${slug(jornada.nombre)}_${slug(jornada.turno)}_${dd}${mm}${yy}_${hhmmss}.html`;
 }
 // ── Tracking de notas exportadas ──────────────────────────────
 const EXPORTED_KEY = 'zalinel_bitacora_exported';
+const EXPORT_INDEX_KEY = 'zalinel_bitacora_export_index_v1';
 
 function getExportedIds() {
   try { return new Set(JSON.parse(localStorage.getItem(EXPORTED_KEY) || '[]')); } catch(e) { return new Set(); }
@@ -1388,6 +1491,34 @@ function markAsExported(ids) {
   const all = getExportedIds();
   ids.forEach(id => all.add(id));
   try { localStorage.setItem(EXPORTED_KEY, JSON.stringify([...all])); } catch(e) {}
+}
+function loadExportIndex() {
+  try {
+    const data = JSON.parse(localStorage.getItem(EXPORT_INDEX_KEY) || 'null');
+    if (data && data.notes) return data;
+  } catch(e) {}
+  return { version: 1, notes: {} };
+}
+function saveExportIndex(index) {
+  try { localStorage.setItem(EXPORT_INDEX_KEY, JSON.stringify(index)); } catch(e) {}
+}
+function noteExportSignature(n) {
+  return JSON.stringify({
+    tipo: n.tipo || '',
+    hora: n.hora || '',
+    texto: n.texto || '',
+    tags: n.tags || [],
+    fotos: n.fotos || [],
+    incidente: n.incidente || null,
+    impacto: n.impacto || '',
+    criticidad: n.criticidad || ''
+  });
+}
+function getNotesForExportFile(filename, index) {
+  const ids = Object.entries(index.notes)
+    .filter(([, rec]) => rec && rec.filename === filename)
+    .map(([id]) => id);
+  return notas.filter(n => ids.includes(String(n.id)));
 }
 
 // ── Configuración Dropbox ─────────────────────────────────────
@@ -1582,10 +1713,11 @@ function toggleDropboxLink() {
   startDropboxAuth();
 }
 
-async function subirADropbox(filename, content) {
+async function subirADropbox(filename, content, options = {}) {
   const token = await getDropboxAccessToken().catch(() => '');
   if (!token) return false;
   const destino = DROPBOX_PATH + '/' + filename;
+  const overwrite = !!options.overwrite;
   try {
     const resp = await fetch('https://content.dropboxapi.com/2/files/upload', {
       method: 'POST',
@@ -1594,8 +1726,8 @@ async function subirADropbox(filename, content) {
         'Content-Type':     'application/octet-stream',
         'Dropbox-API-Arg':  JSON.stringify({
           path:       destino,
-          mode:       'add',
-          autorename: true,
+          mode:       overwrite ? 'overwrite' : 'add',
+          autorename: !overwrite,
           mute:       false,
         }),
       },
@@ -1616,10 +1748,10 @@ async function subirADropbox(filename, content) {
   }
 }
 
-async function download(filename, content, type) {
+async function download(filename, content, type, options = {}) {
   // Intentar subir a Dropbox primero
   if (isDropboxLinked()) {
-    const ok = await subirADropbox(filename, content);
+    const ok = await subirADropbox(filename, content, options);
     if (ok) return; // subido correctamente — no descargar
   }
 

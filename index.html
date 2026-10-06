@@ -258,6 +258,16 @@ select.j-input{appearance:none;background-image:linear-gradient(45deg,transparen
   transition:border-color .15s;min-height:var(--touch);
 }
 .photo-btn:active{border-color:var(--accent);color:var(--accent);}
+.voice-btn{
+  background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);
+  color:var(--text-dim);font-size:21px;width:var(--touch);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:border-color .15s,color .15s,background .15s;min-height:var(--touch);
+}
+.voice-btn.listening{
+  color:#ff8a8a;border-color:var(--danger);background:rgba(224,59,59,.12);
+}
+.voice-btn.unsupported{opacity:.45;}
 #guardar-btn{
   background:var(--accent);color:#000;font-family:var(--cond);font-size:15px;
   font-weight:700;letter-spacing:.06em;text-transform:uppercase;border:none;
@@ -591,6 +601,7 @@ select.j-input{appearance:none;background-image:linear-gradient(45deg,transparen
   <div class="capture-actions">
     <div class="photo-btn" onclick="document.getElementById('foto-input').click()" title="Agregar foto">📷</div>
     <input type="file" id="foto-input" accept="image/*" capture="environment" multiple style="display:none" onchange="handleFotoCapture(event)">
+    <button class="voice-btn" id="voice-btn" type="button" onclick="toggleVoiceInput()" title="Dictar nota" aria-label="Dictar nota">🎙</button>
     <button id="guardar-btn" onclick="guardarNota()">
       <span style="font-size:18px;">✚</span> Guardar nota
     </button>
@@ -645,6 +656,8 @@ let impactoActivo = null;
 let jornada       = { nombre:'', equipo:DEFAULT_EQUIPO, responsable:'', turno:'' };
 let editingId     = null;
 let criticidadActiva = 'MEDIA';
+let voiceRecognition = null;
+let voiceListening = false;
 
 const STATIC_TAGS_ESTADO   = ['urgente','pendiente','confirmado','riesgo'];
 const STATIC_TAGS_ANALISIS = ['hipótesis','procedimiento','insumo','fotografiar'];
@@ -674,6 +687,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateJornadaDisplay();
   }, 60000);
   resetCriticidad();
+  initVoiceInput();
   setTimeout(() => document.getElementById('nota-texto').focus(), 300);
   handleDropboxOAuthRedirect();
 });
@@ -916,6 +930,81 @@ function renderIncidente(inc){
       <div class="full"><b>Acción inmediata:</b> ${esc(inc.accion_inmediata||'—')}</div>
     </div>
   </div>`;
+}
+
+// DICTADO DE VOZ
+// ════════════════════════════════════════
+function initVoiceInput() {
+  const btn = document.getElementById('voice-btn');
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!btn) return;
+  if (!SpeechRecognition) {
+    btn.classList.add('unsupported');
+    btn.title = 'Dictado no disponible en este navegador';
+    return;
+  }
+  voiceRecognition = new SpeechRecognition();
+  voiceRecognition.lang = 'es-CL';
+  voiceRecognition.continuous = false;
+  voiceRecognition.interimResults = false;
+  voiceRecognition.maxAlternatives = 1;
+  voiceRecognition.onstart = () => {
+    voiceListening = true;
+    updateVoiceButton();
+  };
+  voiceRecognition.onend = () => {
+    voiceListening = false;
+    updateVoiceButton();
+  };
+  voiceRecognition.onerror = (event) => {
+    voiceListening = false;
+    updateVoiceButton();
+    if (event.error === 'not-allowed') toast('Permiso de micrófono denegado');
+    else if (event.error !== 'no-speech' && event.error !== 'aborted') toast('No se pudo transcribir audio');
+  };
+  voiceRecognition.onresult = (event) => {
+    const result = event.results && event.results[0] && event.results[0][0];
+    const transcript = result && result.transcript ? result.transcript.trim() : '';
+    if (transcript) appendVoiceTranscript(transcript);
+  };
+  updateVoiceButton();
+}
+
+function updateVoiceButton() {
+  const btn = document.getElementById('voice-btn');
+  if (!btn) return;
+  btn.classList.toggle('listening', voiceListening);
+  btn.textContent = voiceListening ? '■' : '🎙';
+  btn.title = voiceListening ? 'Detener dictado' : 'Dictar nota';
+  btn.setAttribute('aria-pressed', voiceListening ? 'true' : 'false');
+}
+
+function toggleVoiceInput() {
+  if (!voiceRecognition) {
+    toast('Dictado no disponible en este navegador');
+    return;
+  }
+  try {
+    if (voiceListening) {
+      voiceRecognition.stop();
+      return;
+    }
+    document.getElementById('nota-texto')?.focus();
+    voiceRecognition.start();
+  } catch(e) {
+    voiceListening = false;
+    updateVoiceButton();
+  }
+}
+
+function appendVoiceTranscript(text) {
+  const ta = document.getElementById('nota-texto');
+  if (!ta) return;
+  const current = ta.value.trim();
+  ta.value = current ? `${current}\n${text}` : text;
+  autoResize(ta);
+  ta.focus();
+  toast('Dictado agregado');
 }
 
 // GUARDAR NOTA

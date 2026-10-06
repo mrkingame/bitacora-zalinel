@@ -658,6 +658,8 @@ let editingId     = null;
 let criticidadActiva = 'MEDIA';
 let voiceRecognition = null;
 let voiceListening = false;
+let voiceBaseText = '';
+let voiceFinalText = '';
 
 const STATIC_TAGS_ESTADO   = ['urgente','pendiente','confirmado','riesgo'];
 const STATIC_TAGS_ANALISIS = ['hipótesis','procedimiento','insumo','fotografiar'];
@@ -946,10 +948,13 @@ function initVoiceInput() {
   voiceRecognition = new SpeechRecognition();
   voiceRecognition.lang = 'es-CL';
   voiceRecognition.continuous = false;
-  voiceRecognition.interimResults = false;
+  voiceRecognition.interimResults = true;
   voiceRecognition.maxAlternatives = 1;
   voiceRecognition.onstart = () => {
     voiceListening = true;
+    const ta = document.getElementById('nota-texto');
+    voiceBaseText = ta ? ta.value : '';
+    voiceFinalText = '';
     updateVoiceButton();
   };
   voiceRecognition.onend = () => {
@@ -963,9 +968,15 @@ function initVoiceInput() {
     else if (event.error !== 'no-speech' && event.error !== 'aborted') toast('No se pudo transcribir audio');
   };
   voiceRecognition.onresult = (event) => {
-    const result = event.results && event.results[0] && event.results[0][0];
-    const transcript = result && result.transcript ? result.transcript.trim() : '';
-    if (transcript) appendVoiceTranscript(transcript);
+    let interimText = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const result = event.results[i];
+      const transcript = result && result[0] && result[0].transcript ? result[0].transcript.trim() : '';
+      if (!transcript) continue;
+      if (result.isFinal) voiceFinalText = joinVoiceText(voiceFinalText, transcript);
+      else interimText = joinVoiceText(interimText, transcript);
+    }
+    renderVoiceTranscript(interimText);
   };
   updateVoiceButton();
 }
@@ -989,7 +1000,10 @@ function toggleVoiceInput() {
       voiceRecognition.stop();
       return;
     }
-    document.getElementById('nota-texto')?.focus();
+    const ta = document.getElementById('nota-texto');
+    voiceBaseText = ta ? ta.value : '';
+    voiceFinalText = '';
+    ta?.focus();
     voiceRecognition.start();
   } catch(e) {
     voiceListening = false;
@@ -997,14 +1011,22 @@ function toggleVoiceInput() {
   }
 }
 
-function appendVoiceTranscript(text) {
+function joinVoiceText(a, b) {
+  return [a, b].map(v => (v || '').trim()).filter(Boolean).join(' ');
+}
+
+function composeVoiceText(interimText = '') {
+  const dictated = joinVoiceText(voiceFinalText, interimText);
+  const base = (voiceBaseText || '').trim();
+  return base && dictated ? `${base}\n${dictated}` : (base || dictated);
+}
+
+function renderVoiceTranscript(interimText = '') {
   const ta = document.getElementById('nota-texto');
   if (!ta) return;
-  const current = ta.value.trim();
-  ta.value = current ? `${current}\n${text}` : text;
+  ta.value = composeVoiceText(interimText);
   autoResize(ta);
   ta.focus();
-  toast('Dictado agregado');
 }
 
 // GUARDAR NOTA

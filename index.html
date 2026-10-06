@@ -660,6 +660,12 @@ let voiceRecognition = null;
 let voiceListening = false;
 let voiceBaseText = '';
 let voiceFinalText = '';
+let voiceKeepAlive = false;
+let voiceStopRequested = false;
+let voiceRestartTimer = null;
+let voiceSilenceTimer = null;
+let voiceLastActivity = 0;
+const VOICE_SILENCE_MS = 3000;
 
 const STATIC_TAGS_ESTADO   = ['urgente','pendiente','confirmado','riesgo'];
 const STATIC_TAGS_ANALISIS = ['hipótesis','procedimiento','insumo','fotografiar'];
@@ -952,23 +958,28 @@ function initVoiceInput() {
   voiceRecognition.maxAlternatives = 1;
   voiceRecognition.onstart = () => {
     voiceListening = true;
-    const ta = document.getElementById('nota-texto');
-    voiceBaseText = ta ? ta.value : '';
-    voiceFinalText = '';
+    scheduleVoiceSilenceClose();
     updateVoiceButton();
   };
   voiceRecognition.onend = () => {
     voiceListening = false;
-    updateVoiceButton();
+    if (voiceKeepAlive && !voiceStopRequested && (Date.now() - voiceLastActivity) < VOICE_SILENCE_MS) {
+      voiceRestartTimer = setTimeout(() => startVoiceRecognition(false), 140);
+      updateVoiceButton();
+      return;
+    }
+    stopVoiceSession(false);
   };
   voiceRecognition.onerror = (event) => {
     voiceListening = false;
-    updateVoiceButton();
     if (event.error === 'not-allowed') toast('Permiso de micrófono denegado');
     else if (event.error !== 'no-speech' && event.error !== 'aborted') toast('No se pudo transcribir audio');
+    if (event.error === 'not-allowed') stopVoiceSession(false);
   };
   voiceRecognition.onresult = (event) => {
     let interimText = '';
+    voiceLastActivity = Date.now();
+    scheduleVoiceSilenceClose();
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const result = event.results[i];
       const transcript = result && result[0] && result[0].transcript ? result[0].transcript.trim() : '';
@@ -984,10 +995,10 @@ function initVoiceInput() {
 function updateVoiceButton() {
   const btn = document.getElementById('voice-btn');
   if (!btn) return;
-  btn.classList.toggle('listening', voiceListening);
-  btn.textContent = voiceListening ? '■' : '🎙';
-  btn.title = voiceListening ? 'Detener dictado' : 'Dictar nota';
-  btn.setAttribute('aria-pressed', voiceListening ? 'true' : 'false');
+  btn.classList.toggle('listening', voiceKeepAlive || voiceListening);
+  btn.textContent = (voiceKeepAlive || voiceListening) ? '■' : '🎙';
+  btn.title = (voiceKeepAlive || voiceListening) ? 'Detener dictado' : 'Dictar nota';
+  btn.setAttribute('aria-pressed', (voiceKeepAlive || voiceListening) ? 'true' : 'false');
 }
 
 function toggleVoiceInput() {
@@ -996,19 +1007,50 @@ function toggleVoiceInput() {
     return;
   }
   try {
-    if (voiceListening) {
-      voiceRecognition.stop();
+    if (voiceKeepAlive || voiceListening) {
+      stopVoiceSession(true);
       return;
     }
     const ta = document.getElementById('nota-texto');
     voiceBaseText = ta ? ta.value : '';
     voiceFinalText = '';
+    voiceLastActivity = Date.now();
     ta?.focus();
-    voiceRecognition.start();
+    voiceKeepAlive = true;
+    voiceStopRequested = false;
+    startVoiceRecognition(false);
   } catch(e) {
-    voiceListening = false;
-    updateVoiceButton();
+    stopVoiceSession(false);
   }
+}
+
+function startVoiceRecognition(resetActivity = true) {
+  if (!voiceRecognition) return;
+  clearTimeout(voiceRestartTimer);
+  if (resetActivity) voiceLastActivity = Date.now();
+  try { voiceRecognition.start(); } catch(e) {}
+}
+
+function stopVoiceSession(stopRecognition = true) {
+  voiceKeepAlive = false;
+  voiceStopRequested = true;
+  clearTimeout(voiceRestartTimer);
+  clearTimeout(voiceSilenceTimer);
+  if (stopRecognition && voiceRecognition && voiceListening) {
+    try { voiceRecognition.stop(); } catch(e) {}
+  }
+  voiceListening = false;
+  renderVoiceTranscript();
+  updateVoiceButton();
+}
+
+function scheduleVoiceSilenceClose() {
+  clearTimeout(voiceSilenceTimer);
+  if (!voiceKeepAlive) return;
+  voiceSilenceTimer = setTimeout(() => {
+    if (!voiceKeepAlive || voiceStopRequested) return;
+    if ((Date.now() - voiceLastActivity) >= VOICE_SILENCE_MS) stopVoiceSession(true);
+  }, VOICE_SILENCE_MS + 120);
 }
 
 function joinVoiceText(a, b) {

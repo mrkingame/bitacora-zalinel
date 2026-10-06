@@ -1361,22 +1361,28 @@ async function exportHTML() {
     const notasArchivo = getNotesForExportFile(filename, exportIndex);
     if (!notasArchivo.length) continue;
     const html = buildExportHTMLDocument(notasArchivo, filename, new Date());
-    await download(filename, html, 'text/html;charset=utf-8', { overwrite: true });
-    notasArchivo.forEach(n => {
-      exportIndex.notes[String(n.id)] = { filename, signature: noteExportSignature(n) };
-    });
-    archivosReescritos++;
+    const result = await download(filename, html, 'text/html;charset=utf-8', { overwrite: true });
+    if (result && result.ok && result.method === 'dropbox') {
+      const confirmedFilename = result.name || filename;
+      notasArchivo.forEach(n => {
+        exportIndex.notes[String(n.id)] = { filename: confirmedFilename, signature: noteExportSignature(n), path: result.path || '' };
+      });
+      archivosReescritos++;
+    }
   }
 
   if (nuevas.length) {
     const filename = buildFilename();
     const html = buildExportHTMLDocument(nuevas, filename, new Date());
-    await download(filename, html, 'text/html;charset=utf-8', { overwrite: false });
-    nuevas.forEach(n => {
-      exportIndex.notes[String(n.id)] = { filename, signature: noteExportSignature(n) };
-    });
-    markAsExported(nuevas.map(n => n.id));
-    notasExportadas = nuevas.length;
+    const result = await download(filename, html, 'text/html;charset=utf-8', { overwrite: false });
+    if (result && result.ok && result.method === 'dropbox') {
+      const confirmedFilename = result.name || filename;
+      nuevas.forEach(n => {
+        exportIndex.notes[String(n.id)] = { filename: confirmedFilename, signature: noteExportSignature(n), path: result.path || '' };
+      });
+      markAsExported(nuevas.map(n => n.id));
+      notasExportadas = nuevas.length;
+    }
   }
 
   saveExportIndex(exportIndex);
@@ -1385,7 +1391,8 @@ async function exportHTML() {
   const partes = [];
   if (notasExportadas) partes.push(`${notasExportadas} nota${notasExportadas > 1 ? 's' : ''} nueva${notasExportadas > 1 ? 's' : ''}`);
   if (archivosReescritos) partes.push(`${archivosReescritos} archivo${archivosReescritos > 1 ? 's' : ''} actualizado${archivosReescritos > 1 ? 's' : ''}`);
-  toast('✓ ' + partes.join(' · '));
+  if (partes.length) toast('✓ Dropbox confirmó · ' + partes.join(' · '));
+  else toast('No confirmado en Dropbox · reintentar exportación');
 }
 
 function exportJSON() {
@@ -1715,7 +1722,7 @@ function toggleDropboxLink() {
 
 async function subirADropbox(filename, content, options = {}) {
   const token = await getDropboxAccessToken().catch(() => '');
-  if (!token) return false;
+  if (!token) return { ok:false, method:'dropbox', reason:'token' };
   const destino = DROPBOX_PATH + '/' + filename;
   const overwrite = !!options.overwrite;
   try {
@@ -1735,24 +1742,32 @@ async function subirADropbox(filename, content, options = {}) {
     });
     if (resp.ok) {
       const data = await resp.json();
-      toast('✓ Guardado en Dropbox · ' + filename);
-      return true;
+      const confirmedPath = data.path_display || data.path_lower || '';
+      const confirmedName = data.name || filename;
+      const expectedPath = destino.toLowerCase();
+      const pathOk = confirmedPath ? confirmedPath.toLowerCase() === expectedPath : confirmedName === filename;
+      if (!pathOk && !overwrite) {
+        console.warn('[Bitácora] Dropbox guardó con ruta inesperada:', data);
+      }
+      toast('✓ Guardado en Dropbox · ' + confirmedName);
+      return { ok:true, method:'dropbox', path:confirmedPath, name:confirmedName, metadata:data };
     } else {
       const err = await resp.json().catch(() => ({}));
       console.warn('[Bitácora] Dropbox error:', err);
-      return false;
+      return { ok:false, method:'dropbox', reason:'upload', error:err };
     }
   } catch(e) {
     console.warn('[Bitácora] Dropbox sin conexión:', e);
-    return false;
+    return { ok:false, method:'dropbox', reason:'network', error:e };
   }
 }
 
 async function download(filename, content, type, options = {}) {
   // Intentar subir a Dropbox primero
+  let dropboxResult = null;
   if (isDropboxLinked()) {
-    const ok = await subirADropbox(filename, content, options);
-    if (ok) return; // subido correctamente — no descargar
+    dropboxResult = await subirADropbox(filename, content, options);
+    if (dropboxResult && dropboxResult.ok) return dropboxResult; // subido correctamente — no descargar
   }
 
   // Fallback: Share API (Android)
@@ -1760,9 +1775,10 @@ async function download(filename, content, type, options = {}) {
   if (navigator.canShare && navigator.canShare({ files: [new File([blob], filename, { type })] })) {
     try {
       await navigator.share({ files: [new File([blob], filename, { type })], title: filename });
-      return;
+      if (dropboxResult) toast('Dropbox no confirmó · nota sigue pendiente');
+      return { ok:false, method:'share', reason:dropboxResult ? 'dropbox_failed' : 'manual', dropbox:dropboxResult };
     } catch(e) {
-      if (e.name === 'AbortError') return;
+      if (e.name === 'AbortError') return { ok:false, method:'share', reason:'aborted', dropbox:dropboxResult };
     }
   }
 
@@ -1771,6 +1787,8 @@ async function download(filename, content, type, options = {}) {
   const a   = document.createElement('a');
   a.href = url; a.download = filename; a.click();
   URL.revokeObjectURL(url);
+  if (dropboxResult) toast('Dropbox no confirmó · nota sigue pendiente');
+  return { ok:false, method:'download', reason:dropboxResult ? 'dropbox_failed' : 'manual', dropbox:dropboxResult };
 }
 function toast(msg) {
   const t = document.getElementById('toast');

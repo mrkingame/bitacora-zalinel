@@ -1,7 +1,7 @@
 {
-  "name": "Bitácora de Terreno — ZALINEL",
-  "short_name": "Bitácora",
-  "description": "Registro de notas operativas en terreno",
+  "name": "ZALINEL Terreno",
+  "short_name": "ZALINEL",
+  "description": "Accesos móviles operativos conectados a ZALINEL Suite",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0e1117",
